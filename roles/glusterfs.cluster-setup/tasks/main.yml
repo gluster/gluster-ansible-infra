@@ -1,0 +1,66 @@
+---
+- name: Create Physical Volume
+  glusterfs_pv:
+              state={{state}}
+              disk={{item.disk}}
+              force={{item.force}}
+              uuid={{item.uuid}}
+              dataalignment={{item.dataalignment}}
+              zero={{item.zero}}
+              metadatasize={{item.metadatasize}}
+  with_items:
+  - "{{ pvcreate_list}}"
+
+- name: Create volume group on the disks
+  glusterfs_vg:
+              state={{state}}
+              disk={{ item.disk }}
+              vgname={{ item.vgname }}
+              zero={{ item.zero}}
+              dataalignment={{ item.dataalignment}}
+              maxlogicalvolumes={{ item.maxlogicalvolumes}}
+              maxphysicalvolumes={{ item.maxphysicalvolumes}}
+  with_items:
+  - "{{ vgcreate_list}}"
+
+- name: Create Logical Volume
+  glusterfs_lv:
+              state={{state}}
+              lvtype="{{ item.lvtype }}"
+              lvname={{ item.lvname }}
+              vgname={{ item.vgname }}
+              size={{item.size}}
+              chunksize="{{ item.chunksize }}"
+              poolmetadatasize="{{ item.poolmetadatasize }}"
+              poolname={{ item.poolname }}
+              pvname="{{ item.pvname }}"
+              virtualsize={{item.virtualsize}}
+  with_items:
+  - "{{ lvcreate_list }}"
+
+# - name: Create an xfs filesystem
+#   include_tasks: fscreate.yml
+
+- name: Create the dir to mount the volume, skips if present
+  file:
+    path={{item.path}}
+    state=directory
+  with_items:
+  - "{{ create_dirs}}"
+# mkfs
+- name: Create an xfs filesystem
+  filesystem:
+    fstype={{item.fstype}}
+    dev={{item.dev}}
+  with_items:
+  - "{{ create_fs}}"
+
+- name: Mount the volumes
+  glusterfs_mount:
+                 path={{item.path}}
+                 src={{item.src}}
+                 fstype={{item.fstype}}
+                 state={{item.state}}
+                 opts={{item.opts}}
+  with_items:
+  - "{{ mount_list}}"

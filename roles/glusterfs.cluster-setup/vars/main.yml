@@ -1,0 +1,43 @@
+---
+# Example vars file for pvcreate
+pvcreate_list:
+- "{{ pv1 }}"
+- "{{ pv2 }}"
+pv1:
+  state: create
+  disk: /dev/vdb
+  force: y
+  uuid: 92aa09de-7680-11e7-b5a5-be2e44b06b34
+  dataalignment: 1280
+  zero: n
+  metadatasize: 10
+pv2:
+  state: create
+  disk: /dev/vdc
+  force: y
+  uuid: 92aa09de-7680-11e7-b5a5-be2e44b06b35
+  dataalignment: 1280
+  zero: n
+  metadatasize: 10
+
+---
+# Example vars file for vgcreate
+vgcreate_list:
+- "{{ vg1 }}"
+- "{{ vg2 }}"
+vg1:
+  state: create
+  vgname: vg1
+  disk: /dev/vdb
+  zero: y
+  dataalignment: 1280
+  maxlogicalvolumes: 2
+  maxphysicalvolumes: 2
+vg2:
+  state: create
+  vgname: vg2
+  disk: /dev/vdc
+  zero: y
+  dataalignment: 1280
+  maxlogicalvolumes: 2
+  maxphysicalvolumes: 2

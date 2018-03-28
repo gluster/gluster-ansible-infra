@@ -1,0 +1,9 @@
+---
+#TODO: Add role to establish passwordless ssh
+- name: Create backend infrastructure for gluster cluster
+import_tasks: setup_infra.yml
+# when: state == 'present'
+
+- name: Reset backend  infrastructure for gluster cluster
+import_tasks: reset_infra.yml
+when: state == 'absent'
