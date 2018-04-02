@@ -1,8 +1,0 @@
----
-- name: Add nodes to a gluster cluster
-  import_role:
-    name: glusterfs.infra/roles/glusterfs.peers
-
-- name: Set up the backend infrastructure for gluster cluster
-  import_role:
-    name: glusterfs.infra/roles/glusterfs.cluster-setup

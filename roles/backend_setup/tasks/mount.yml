@@ -1,0 +1,11 @@
+---
+# Only XFS is supported in GlusterFS
+
+- name: Mount the devices
+  mount:
+     path: "{{ item.path }}"
+     state: mounted
+     fstype: xfs
+     opts: "inode64,noatime,nodiratime"
+     src: "/dev/mapper/{{ item.vg }}-{{ item.lv }}"
+  with_items: "{{ glusterfs_infra_mount_devices }}"

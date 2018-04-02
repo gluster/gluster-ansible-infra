@@ -1,0 +1,36 @@
+---
+# Create a logical volume thinpool when thinpoolname is given
+
+# Chunksize is calculated as follows for GlusterFS' optimal performance.
+# RAID6:
+#    full_stripe_size = stripe_unit_size * no_of_data_disks
+#
+# Where full_stripe_size should be between 1 MiB and 2 MiB. And chunksize is set
+# to full_stripe_size
+#
+- name: Calculate chunksize for RAID6/RAID10
+  set_fact:
+     lv_chunksize: >
+        {{ glusterfs_infra_stripe_unit_size|int *
+           glusterfs_infra_diskcount|int }}K
+  when: >
+     glusterfs_infra_disktype == 'RAID6' or
+     glusterfs_infra_disktype == 'RAID10'
+
+# For JBOD the thin pool chunk size is set to 256 KiB.
+- name: Calculate chunksize for JBOD
+  set_fact:
+     lv_chunksize: '256K'
+  when: glusterfs_infra_disktype == 'JBOD'
+
+
+- name: Create a LV thinpool
+  lvol:
+     state: present
+     vg: "{{ glusterfs_infra_vg_name }}"
+     thinpool: "{{ glusterfs_infra_lv_thinpoolname }}"
+     size: "{{ glusterfs_infra_lv_thinpoolsize | default('100%VG') }}"
+     opts: " --chunksize {{ lv_chunksize }}
+             --poolmetadatasize {{ glusterfs_infra_lv_poolmetadatasize }}
+             --zero n"
+
