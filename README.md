@@ -26,16 +26,16 @@ respective sub-roles directory.
 ### firewall_config
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| glusterfs_infra_fw_state | enabled/disabled/present/absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
+| glusterfs_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
 | glusterfs_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
 | glusterfs_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
-| glusterfs_infra_fw_zone    | work/drop/internal/external/trusted/home/dmz/public/block | public   | The firewalld zone to add/remove to/from |
+| glusterfs_infra_fw_zone    | work / drop / internal / external / trusted / home / dmz / public / block | public   | The firewalld zone to add/remove to/from |
 | glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable
 
 ### backend_setup
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| glusterfs_infra_disktype | JBOD/RAID6/RAID10  | UNDEF   | Backend disk type. |
+| glusterfs_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
 | glusterfs_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
 | glusterfs_infra_vg_name  || UNDEF | Volume group name |
 | glusterfs_infra_pvs  | | UNDEF | Comma-separated list of physical devices / VDO devices |

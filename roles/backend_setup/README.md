@@ -1,38 +1,157 @@
-Role Name
+glusterfs.infra
 =========
 
-A brief description of the role goes here.
+This role helps the user to setup the backend for GlusterFS filesystem.
+
+backend_setup:
+        - Create volume groups, logical volumes (thinpool, thin lv, thick lv)
+        - Create xfs filesystem
+        - Mount the filesystem
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Ansible version 2.5 or above
+
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+### backend_setup
 
-Dependencies
-------------
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| glusterfs_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
+| glusterfs_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
+| glusterfs_infra_vg_name  || UNDEF | Volume group name |
+| glusterfs_infra_pvs  | | UNDEF | Comma-separated list of physical devices / VDO devices |
+| glusterfs_infra_lv_thinpoolname || UNDEF| LV Thin pool name |
+| glusterfs_infra_stripe_unit_size || UNDEF| Stripe unit size (KiB). *DO NOT* including trailing 'k' or 'K'  |
+| glusterfs_infra_lv_poolmetadatasize || UNDEF| Metadata size for LV, recommended 16G. Include the unit [G\|M\|K] |
+| glusterfs_infra_lv_thinpoolsize || UNDEF| Thinpool size, if not set, entire disk is used. Include the unit [G\|M\|K] |
+| glusterfs_infra_lv_thinlvname || UNDEF | LV thin volume name |
+| glusterfs_infra_lv_logicalvol_size || UNDEF | Size of the LV thin volume. Include the unit [G\|M\|K]|
+| glusterfs_infra_lv_thicklvname || UNDEF | Optional. Needed only if thick volume has to be created. |
+| glusterfs_infra_lv_thicklvsize || UNDEF | Optional. Needed only if thick volume has to be created. Include the unit [G\|M\|K]|
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+### Variables for filesystem creation
 
-Example Playbook
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| glusterfs_infra_fs_force | yes/no  | no | Use force while filesystem creation |
+| glusterfs_infra_lvs || UNDEF | This is dictionary with vg and lv as keys. |
+
+```
+For example:
+glusterfs_infra_lvs:
+        - {
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thinlvname }}"
+          }
+```
+
+### Variables for mounting the filesystem
+
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| glusterfs_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vg, and lv are the keys. |
+
+```
+For example:
+glusterfs_infra_mount_devices:
+        - {
+            path: '/mnt/thinv',
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thinlvname }}"
+          }
+        - {
+            path: '/mnt/thicklv',
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thicklvname }}"
+          }
+```
+
+### Tags
+--------
+
+vdocreate, vgcreate, thinpool, thinvol, thickvol, fscreate, mount
+
+
+### Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Create GlusterFS brick: setup logical volumes, create filesystem, and mount.
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+
+```yaml
+---
+- name: Setting up backend
+  remote_user: root
+  hosts: servers
+  gather_facts: false
+
+  vars:
+     # Set a disk type
+     # Options: JBOD, RAID6, RAID10
+     #
+     glusterfs_infra_disktype: RAID6
+
+     # RAID6 and RAID10 diskcount (Needed only when disktype is raid)
+     glusterfs_infra_diskcount: 10
+     # Stripe unit size always in KiB
+     glusterfs_infra_stripe_unit_size: 128
+
+     # Variables for creating volume group
+     #
+     glusterfs_infra_vg_name: role_test_vg
+     glusterfs_infra_pvs: /dev/vdb,/dev/vdc
+
+     # Create a thinpool
+     glusterfs_infra_lv_thinpoolname: role_test_thinpool
+     glusterfs_infra_lv_poolmetadatasize: 1G
+     glusterfs_infra_lv_thinpoolsize: 50G # If not provided entire disk is used
+
+     # Create a thin volume
+     glusterfs_infra_lv_thinlvname: role_test_lv
+     # The vitualsize option while creating thinpool
+     glusterfs_infra_lv_logicalvol_size: 500G
+
+     # Create a thick volume name
+     glusterfs_infra_lv_thicklvname: one_thick_lv
+     glusterfs_infra_lv_thicklvsize: 20G
+
+     # Create filesystem
+     glusterfs_infra_fs_force: yes
+     glusterfs_infra_lvs:
+        - {
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thinlvname }}"
+          }
+
+     # Mount the devices
+     glusterfs_infra_mount_devices:
+        - {
+            path: '/mnt/thinv',
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thinlvname }}"
+          }
+        - {
+            path: '/mnt/thicklv',
+            vg: "{{ glusterfs_infra_vg_name }}",
+            lv: "{{ glusterfs_infra_lv_thicklvname }}"
+          }
+
+
+  roles:
+     - glusterfs.infra
+
+```
+
+Individual components of glusterfs.infra can be invoked using tags.
+
 
 License
 -------
 
-BSD
+GPLv3
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

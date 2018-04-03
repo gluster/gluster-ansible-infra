@@ -21,7 +21,7 @@ The following are the variables available for this role
 | glusterfs_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
 | glusterfs_infra_fw_zone    | work / drop / internal/ external / trusted / home
 / dmz/ public / block | public   | The firewalld zone to add/remove to/from |
-| glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable
+| glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable|
 
 ### Tags
 --------
