@@ -1,38 +1,73 @@
-Role Name
-=========
+firewall_config
+===============
 
-A brief description of the role goes here.
+This role helps the user to configure the firewall.
+
 
 Requirements
 ------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Ansible version 2.5 or above
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The following are the variables available for this role
 
-Dependencies
-------------
+### firewall_config
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| glusterfs_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
+| glusterfs_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
+| glusterfs_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
+| glusterfs_infra_fw_zone    | work / drop / internal/ external / trusted / home
+/ dmz/ public / block | public   | The firewalld zone to add/remove to/from |
+| glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+### Tags
+--------
+firewall
 
-Example Playbook
-----------------
+### Example Playbook
+--------------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Configure the ports and services related to GlusterFS:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+
+```yaml
+---
+- name: Setting up backend
+  remote_user: root
+  hosts: servers
+  gather_facts: false
+
+  vars:
+     # Firewall setup
+     glusterfs_infra_fw_ports:
+        - 2049/tcp
+        - 54321/tcp
+        - 5900/tcp
+        - 5900-6923/tcp
+        - 5666/tcp
+        - 16514/tcp
+     glusterfs_infra_fw_permanent: true
+     glusterfs_infra_fw_state: enabled
+     glusterfs_infra_fw_zone: public
+     glusterfs_infra_fw_services:
+        - glusterfs
+
+  roles:
+     - glusterfs.infra
+
+```
+
+The above playbook will be run as part of the glusterfs.infra. However if you
+want to run just the firewall role use the tag firewall.
+
+For example:
+\# ansible-playbook -i inventory_file playbook_file.yml --tags firewall
 
 License
 -------
 
-BSD
+GPLv3
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
