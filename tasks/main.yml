@@ -3,7 +3,9 @@
 - name: Add firewall rules
   import_role:
     name: "glusterfs.infra/roles/firewall_config"
-  when: glusterfs_infra_fw_state is defined
+  when: >
+     glusterfs_infra_fw_ports is defined or
+     glusterfs_infra_fw_services is defined
   tags:
     - firewall
 

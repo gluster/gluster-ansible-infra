@@ -39,10 +39,18 @@
      glusterfs_infra_disktype == 'RAID6' or
      glusterfs_infra_disktype == 'RAID10'
 
+# If the disk is vdo, generate the vdo device(s)
+# A bit kludgy
+- name: Set the vdo disks
+  set_fact:
+     glusterfs_infra_pvs:
+         "/dev/mapper/{{glusterfs_infra_vdo|map(attribute='name')|
+                        join(',/dev/mapper/') }}"
+  when: glusterfs_infra_vdo is defined
 
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
-- name: Create volume group on the nodes
+- name: Create volume group - "{{glusterfs_infra_vg_name}}"
   lvg:
      state: present
      vg: "{{ glusterfs_infra_vg_name }}"

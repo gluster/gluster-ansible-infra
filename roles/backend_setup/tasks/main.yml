@@ -15,6 +15,13 @@
   tags:
      - vgcreate
 
+# If a thick volume is requested for the same vg
+- name: Create a thick logical volume
+  import_tasks: thick_lv_create.yml
+  when: glusterfs_infra_lv_thicklvsize is defined
+  tags:
+    - thickvol
+
 # Create a thinpool for the given volume group
 - name: Create thin pool
   import_tasks: thin_pool_create.yml
@@ -25,21 +32,22 @@
 # Create a thin volume
 - name: Create thin logical volume
   import_tasks: thin_volume_create.yml
-  when: glusterfs_infra_lv_thinlvname is defined
+  when: glusterfs_infra_lv_logicalvols is defined
   tags:
     - thinvol
 
-# If a thick volume is requested for the same vg
-- name: Create a thick logical volume
-  import_tasks: thick_lv_create.yml
-  when: glusterfs_infra_lv_thicklvname is defined
+# Setup cache on the given SSD
+- name: Setup cache
+  import_tasks: cache_setup.yml
+  when: glusterfs_infra_ssd_disk is defined
   tags:
-    - thickvol
+    - cachesetup
 
-# Create a filesystem on the disks
+# Create a filesystem on the disks. There is no `when:'
+# directive for this, fscreate happens anyway.
 - name: Create a filesystem on the disks
   import_tasks: fscreate.yml
-  when: glusterfs_infra_fstype is defined and glusterfs_infra_lvs is defined
+  # when: glusterfs_infra_fscreate_lvs is defined
   tags:
     - fscreate
 

@@ -18,18 +18,18 @@
      glusterfs_infra_disktype == 'RAID10'
 
 # For JBOD the thin pool chunk size is set to 256 KiB.
-- name: Calculate chunksize for JBOD
+- name: Set chunksize for JBOD
   set_fact:
      lv_chunksize: '256K'
   when: glusterfs_infra_disktype == 'JBOD'
 
 
-- name: Create a LV thinpool
+- name: Create a LV thinpool - "{{glusterfs_infra_lv_thinpoolname}}"
   lvol:
      state: present
      vg: "{{ glusterfs_infra_vg_name }}"
      thinpool: "{{ glusterfs_infra_lv_thinpoolname }}"
-     size: "{{ glusterfs_infra_lv_thinpoolsize | default('100%VG') }}"
+     size: "{{ glusterfs_infra_lv_thinpoolsize | default('100%FREE') }}"
      opts: " --chunksize {{ lv_chunksize }}
              --poolmetadatasize {{ glusterfs_infra_lv_poolmetadatasize }}
              --zero n"

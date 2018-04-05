@@ -1,12 +1,12 @@
 ---
 # Create a thin logical volume. A thinpool should already have been created by
-# now. A logical volume of name glusterfs_infra_lv_name will be created on
-# thinpool glusterfs_infra_lv_thinpoolname
+# now. There can be more than one thinvolume on a thinpool
 
 - name: Create thin logical volume
   lvol:
      state: present
      vg: "{{ glusterfs_infra_vg_name }}"
-     lv: "{{ glusterfs_infra_lv_thinlvname }}"
+     lv: "{{ item.lvname }}"
      thinpool: "{{ glusterfs_infra_lv_thinpoolname }}"
-     size: "{{ glusterfs_infra_lv_logicalvol_size }}"
+     size: "{{ item.lvsize }}"
+  with_items: "{{ glusterfs_infra_lv_logicalvols }}"

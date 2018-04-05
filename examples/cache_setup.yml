@@ -1,0 +1,19 @@
+- name: Setting up backend
+  remote_user: root
+  hosts: vdos
+  gather_facts: false
+
+  # gluster-ansible -i inventory_file cache_setup.yml --tags cachesetup
+
+  vars:
+     # Variables for creating volume group
+     glusterfs_infra_vg_name: glusterfs_vg
+
+     # Note: The _pvs varialbe is not needed when cachesetup is done along with
+     # vdo creation, since vg role takes care of generating this variable
+     glusterfs_infra_pvs: /dev/mapper/foo,/dev/mapper/bar
+     glusterfs_infra_ssd_disk: /dev/vdd
+     glusterfs_infra_lv_cachelvsize: 100M
+
+  roles:
+      - glusterfs.infra

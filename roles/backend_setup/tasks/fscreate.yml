@@ -2,26 +2,39 @@
 # If disktype is RAID we use the options:
 # -f -K -i size=512 -d sw=%s,su=%sk -n size=8192 where sw is the diskcount and
 # su is the stripe_unit_size
+- name: Set XFS options for JBOD
+  set_fact:
+     fs_options: " -f -K -i size=512 -n size=8192 "
+
 - name: Set XFS options for RAID devices
   set_fact:
-     fs_options:
-        " -K -i size=512 -d sw={{ glusterfs_infra_diskcount }},\
-          su={{ glusterfs_infra_stripe_unit_size }}k -n size=8192 "
+     raid_options:
+        " -d sw={{ glusterfs_infra_diskcount }},\
+             su={{ glusterfs_infra_stripe_unit_size }}k "
   when: >
       glusterfs_infra_disktype == 'RAID6' or
       glusterfs_infra_disktype == 'RAID10'
 
-- name: Set XFS options for JBOD
+# Collect the disks from the input file
+- name: Get the list of logical volumes for setup
   set_fact:
-     fs_options: " -f -K -i size=512 -n size=8192 "
-  when: glusterfs_infra_disktype == 'JBOD'
+     glusterfs_infra_fscreate_lvs:
+         "{{ glusterfs_infra_lv_logicalvols|map(attribute='lvname')|list }}"
+  when: glusterfs_infra_lv_logicalvols is defined
 
+# Do we have a thick volume?
+- name: Get the thick volumes to create filesysem
+  set_fact:
+     glusterfs_infra_fscreate_lvs:
+         "{{glusterfs_infra_fscreate_lvs|default([])}} +
+          ['{{glusterfs_infra_lv_thicklvname}}']"
+  when: glusterfs_infra_lv_thicklvsize is defined
 
 # We support only XFS. Filesysem options sw, su are specific to XFS
 - name: Create a filesystem on the disks
   filesystem:
      fstype: xfs
-     dev: "/dev/mapper/{{ item.vg }}-{{ item.lv }}"
-     opts: "{{ fs_options }}"
-     force: "{{ glusterfs_infra_fs_force | default('no') }}"
-  with_items: "{{ glusterfs_infra_lvs }}"
+     dev: "/dev/{{ glusterfs_infra_vg_name }}/{{ item }}"
+     opts: "{{ fs_options }} {{ raid_options }}"
+     force: "{{ glusterfs_infra_fs_force | default('yes') }}"
+  with_items: "{{ glusterfs_infra_fscreate_lvs }}"
