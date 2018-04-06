@@ -1,0 +1,22 @@
+---
+# CLI: ansible-playbook -i inventory vg_create.yml --tags vdocreate,vgcreate
+- name: Setting up backend with VDO
+  remote_user: root
+  hosts: vdos
+  gather_facts: false
+
+  vars:
+     # Create a vdo
+     glusterfs_infra_vdo:
+        - { name: 'foo', device: '/dev/vdb' }
+
+     # Variables for creating volume group
+     glusterfs_infra_vg_name: vdo_vg
+     glusterfs_infra_disktype: RAID6
+
+     # RAID6 and RAID10 diskcount
+     glusterfs_infra_diskcount: 10
+     glusterfs_infra_stripe_unit_size: 128
+
+  roles:
+    - glusterfs.infra

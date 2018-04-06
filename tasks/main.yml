@@ -1,9 +1,16 @@
 ---
-#TODO: Add role to establish passwordless ssh
-- name: Create backend infrastructure for gluster cluster
-import_tasks: setup_infra.yml
-# when: state == 'present'
+# tasks file for glusterfs.infra
+- name: Add firewall rules
+  import_role:
+    name: "glusterfs.infra/roles/firewall_config"
+  when: >
+     glusterfs_infra_fw_ports is defined or
+     glusterfs_infra_fw_services is defined
+  tags:
+    - firewall
 
-- name: Reset backend  infrastructure for gluster cluster
-import_tasks: reset_infra.yml
-when: state == 'absent'
+- name: Configure the bricks
+  import_role:
+    name: "glusterfs.infra/roles/backend_setup"
+  tags:
+    - backend_setup

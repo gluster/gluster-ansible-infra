@@ -1,0 +1,59 @@
+---
+# tasks file for backend-setup
+
+# A vdo is created an will be used for setting up bricks instead of physical
+# volumes
+- name: Create a vdo disk
+  import_tasks: vdo_create.yml
+  when: glusterfs_infra_vdo is defined
+  tags:
+    - vdocreate
+
+- name: Create a volume group
+  import_tasks: vg_create.yml
+  when: glusterfs_infra_vg_name is defined
+  tags:
+     - vgcreate
+
+# If a thick volume is requested for the same vg
+- name: Create a thick logical volume
+  import_tasks: thick_lv_create.yml
+  when: glusterfs_infra_lv_thicklvsize is defined
+  tags:
+    - thickvol
+
+# Create a thinpool for the given volume group
+- name: Create thin pool
+  import_tasks: thin_pool_create.yml
+  when: glusterfs_infra_lv_thinpoolname is defined
+  tags:
+    - thinpool
+
+# Create a thin volume
+- name: Create thin logical volume
+  import_tasks: thin_volume_create.yml
+  when: glusterfs_infra_lv_logicalvols is defined
+  tags:
+    - thinvol
+
+# Setup cache on the given SSD
+- name: Setup cache
+  import_tasks: cache_setup.yml
+  when: glusterfs_infra_ssd_disk is defined
+  tags:
+    - cachesetup
+
+# Create a filesystem on the disks. There is no `when:'
+# directive for this, fscreate happens anyway.
+- name: Create a filesystem on the disks
+  import_tasks: fscreate.yml
+  # when: glusterfs_infra_fscreate_lvs is defined
+  tags:
+    - fscreate
+
+# Mount the devices
+- name: Mount the devices
+  import_tasks: mount.yml
+  when: glusterfs_infra_mount_devices is defined
+  tags:
+    - mount

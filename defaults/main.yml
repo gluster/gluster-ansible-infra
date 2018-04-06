@@ -1,0 +1,16 @@
+---
+# defaults file for glusterfs.infra
+# Defaults for firewall setup
+glusterfs_infra_fw_permanent: true
+glusterfs_infra_fw_state: enabled
+glusterfs_infra_fw_zone: public
+
+# Defaults for backend setup
+glusterfs_infra_vdo_state: present
+glusterfs_infra_vg_name: glusterfs_vg
+glusterfs_infra_lv_thinpoolname: glusterfs_thinpool
+glusterfs_infra_lv_thicklvname: glusterfs_thicklv
+glusterfs_infra_lv_cachelvname: glusterfs_ssd_cache
+# GlusterFS recommends 16G, if it has to be overridden set
+# this variable in playbooks
+glusterfs_infra_lv_poolmetadatasize: 16G

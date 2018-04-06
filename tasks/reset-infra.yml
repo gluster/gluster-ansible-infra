@@ -1,4 +1,0 @@
----
-- name: Reset the backend infrastructure of the gluster nodes
-  import_role:
-    name: glusterfs.infra/roles/glusterfs.cluster-reset

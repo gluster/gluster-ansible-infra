@@ -1,0 +1,38 @@
+---
+# CLI: ansible-playbook -i inventory hc_backend.yml
+# Set up backend for the hyperconverged setup
+- name: Setting up backend with VDO
+  remote_user: root
+  hosts: vdos
+  gather_facts: false
+
+  vars:
+     # Create a vdo
+     glusterfs_infra_vdo:
+        - { name: 'hc_vdo', device: '/dev/vdb' }
+
+     # Disk parameters
+     glusterfs_infra_disktype: RAID6
+     glusterfs_infra_diskcount: 10
+     glusterfs_infra_stripe_unit_size: 128
+
+     # Set the size for thick volume
+     glusterfs_infra_lv_thicklvsize: 20G
+
+     # Create thin logical volumes
+     glusterfs_infra_lv_logicalvols:
+        - { lvname: 'hc_images', lvsize: '500G' }
+        - { lvname: 'hc_data', lvsize: '500G' }
+
+     # Setup cache on the disks
+     glusterfs_infra_ssd_disk: /dev/vdd
+     glusterfs_infra_lv_cachelvsize: 20G
+
+     # Mount the devices
+     glusterfs_infra_mount_devices:
+        - { path: '/mnt/images', lv: hc_images }
+        - { path: '/mnt/engine', lv: glusterfs_thicklv }
+        - { path: '/mnt/data',   lv: hc_data   }
+
+  roles:
+    - glusterfs.infra

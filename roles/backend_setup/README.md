@@ -1,13 +1,9 @@
 glusterfs.infra
 =========
 
-This role helps the user to get started in deploying GlusterFS filesystem. The
-glusterfs.infra role has multiple sub-roles which are invoked depending on the
-variables that are set. The sub-roles are
+This role helps the user to setup the backend for GlusterFS filesystem.
 
-1. firewall_config - Set up firewall rules (open ports, add services to zone)
-2. backend_setup:
-        - Create VDO volume (If vdo is opted) 
+backend_setup:
         - Create volume groups, logical volumes (thinpool, thin lv, thick lv)
         - Create xfs filesystem
         - Mount the filesystem
@@ -16,24 +12,10 @@ Requirements
 ------------
 
 Ansible version 2.5 or above
-GlusterFS version 3.2 or above
-VDO utilities (Optional)
+
 
 Role Variables
 --------------
-
-These are the superset of role variables. They are explained again in the
-respective sub-roles directory.
-
-### firewall_config
--------------------
-| Name                     |Choices| Default value         | Comments                          |
-|--------------------------|-------|-----------------------|-----------------------------------|
-| glusterfs_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
-| glusterfs_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
-| glusterfs_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
-| glusterfs_infra_fw_zone    | work / drop / internal / external / trusted / home / dmz / public / block | public   | The firewalld zone to add/remove to/from |
-| glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable
 
 ### backend_setup
 -----------------
@@ -59,8 +41,6 @@ respective sub-roles directory.
 | glusterfs_infra_lv_cachemetalvname | | UNDEF | Optional. Cache metadata volume name. |
 | glusterfs_infra_lv_cachemetalvsize | | UNDEF | Optional. Cache metadata volume size. |
 | glusterfs_infra_cachemode | | writethrough | Optional. If omitted writethrough is used. |
-
-
 
 
 #### VDO Variable
@@ -104,8 +84,6 @@ glusterfs_infra_mount_devices:
         - { path: '/mnt/thinv', lv: <lvname> }
         - { path: '/mnt/thicklv', lv: "{{ glusterfs_infra_lv_thicklvname }}" }
 ```
-
-
 
 
 Example Playbook
@@ -173,4 +151,3 @@ License
 -------
 
 GPLv3
-
