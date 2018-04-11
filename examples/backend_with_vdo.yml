@@ -6,25 +6,25 @@
 
   vars:
      # Create a vdo
-     glusterfs_infra_vdo:
+     gluster_infra_vdo:
         - { name: 'foo', device: '/dev/vdb' }
         - { name: 'bar', device: '/dev/vdc' }
 
-     glusterfs_infra_disktype: RAID10
+     gluster_infra_disktype: RAID10
 
      # RAID6 and RAID10 diskcount
-     glusterfs_infra_diskcount: 10
-     glusterfs_infra_stripe_unit_size: 128
+     gluster_infra_diskcount: 10
+     gluster_infra_stripe_unit_size: 128
 
      # The vitualsize option while creating thinpool
-     glusterfs_infra_lv_logicalvols:
+     gluster_infra_lv_logicalvols:
         - { lvname: 'thin_lv1', lvsize: '500G' }
         - { lvname: 'thin_lv2', lvsize: '500G' }
 
      # Mount the devices
-     glusterfs_infra_mount_devices:
+     gluster_infra_mount_devices:
         - { path: '/mnt/thinv1',   lv: 'thin_lv1' }
         - { path: '/mnt/thinv2',   lv: 'thin_lv2' }
 
   roles:
-    - glusterfs.infra
+    - gluster.infra

@@ -7,5 +7,5 @@
      state: mounted
      fstype: xfs
      opts: "inode64,noatime,nodiratime"
-     src: "/dev/{{glusterfs_infra_vg_name}}/{{item.lv}}"
-  with_items: "{{ glusterfs_infra_mount_devices }}"
+     src: "/dev/{{gluster_infra_vg_name}}/{{item.lv}}"
+  with_items: "{{ gluster_infra_mount_devices }}"
