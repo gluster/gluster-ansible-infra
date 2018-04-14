@@ -18,7 +18,7 @@
 - name: Add/Delete services to firewalld rules
   firewalld:
         service: "{{ item }}"
-        permanent: "{{ gluster_infra_fw_permanent | defined('false') }}"
+        permanent: "{{ gluster_infra_fw_permanent | default('false') }}"
         state: "{{ gluster_infra_fw_state }}"
         zone: "{{ gluster_infra_fw_zone | default('public') }}"
         immediate: "{{ gluster_infra_fw_immediate | default('yes') }}"
