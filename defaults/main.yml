@@ -6,6 +6,7 @@ gluster_infra_fw_state: enabled
 gluster_infra_fw_zone: public
 
 # Defaults for backend setup
+gluster_infra_disktype: JBOD
 gluster_infra_vdo_state: present
 gluster_infra_vg_name: glusterfs_vg
 gluster_infra_lv_thinpoolname: glusterfs_thinpool
