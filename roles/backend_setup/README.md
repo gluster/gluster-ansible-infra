@@ -36,7 +36,7 @@ Role Variables
 | gluster_infra_lv_thicklvsize || UNDEF | Optional. Needed only if thick volume has to be created. Include the unit [G\|M\|K]|
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, and lv are the keys. |
 | gluster_infra_ssd_disk | | UNDEF | SSD disk for cache setup, specific to HC setups. Should be absolute path. e.g /dev/sdc |
-| gluster_infra_lv_cachelvname | | glusterfs_ssd_cache | Optional varialbe, if omitted glusterfs_ssd_cache is used by default. |
+| gluster_infra_lv_cachelvname | | glusterfs_ssd_cache | Optional variable, if omitted glusterfs_ssd_cache is used by default. |
 | gluster_infra_lv_cachelvsize | | UNDEF | Size of the cache logical volume. Used only while setting up cache. |
 | gluster_infra_lv_cachemetalvname | | UNDEF | Optional. Cache metadata volume name. |
 | gluster_infra_lv_cachemetalvsize | | UNDEF | Optional. Cache metadata volume size. |
