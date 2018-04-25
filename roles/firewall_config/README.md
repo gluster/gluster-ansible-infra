@@ -16,12 +16,12 @@ The following are the variables available for this role
 ### firewall_config
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| glusterfs_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
-| glusterfs_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
-| glusterfs_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
-| glusterfs_infra_fw_zone    | work / drop / internal/ external / trusted / home
+| gluster_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
+| gluster_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
+| gluster_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
+| gluster_infra_fw_zone    | work / drop / internal/ external / trusted / home
 / dmz/ public / block | public   | The firewalld zone to add/remove to/from |
-| glusterfs_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable|
+| gluster_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable|
 
 ### Tags
 --------
@@ -42,25 +42,25 @@ Configure the ports and services related to GlusterFS:
 
   vars:
      # Firewall setup
-     glusterfs_infra_fw_ports:
+     gluster_infra_fw_ports:
         - 2049/tcp
         - 54321/tcp
         - 5900/tcp
         - 5900-6923/tcp
         - 5666/tcp
         - 16514/tcp
-     glusterfs_infra_fw_permanent: true
-     glusterfs_infra_fw_state: enabled
-     glusterfs_infra_fw_zone: public
-     glusterfs_infra_fw_services:
+     gluster_infra_fw_permanent: true
+     gluster_infra_fw_state: enabled
+     gluster_infra_fw_zone: public
+     gluster_infra_fw_services:
         - glusterfs
 
   roles:
-     - glusterfs.infra
+     - gluster.infra
 
 ```
 
-The above playbook will be run as part of the glusterfs.infra. However if you
+The above playbook will be run as part of the gluster.infra. However if you
 want to run just the firewall role use the tag firewall.
 
 For example:

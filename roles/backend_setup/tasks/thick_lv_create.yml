@@ -2,6 +2,6 @@
 - name: Create thick logical volume
   lvol:
      state: present
-     vg: "{{ glusterfs_infra_vg_name }}"
-     lv: "{{ glusterfs_infra_lv_thicklvname }}"
-     size: "{{ glusterfs_infra_lv_thicklvsize }}"
+     vg: "{{ gluster_infra_vg_name }}"
+     lv: "{{ gluster_infra_lv_thicklvname }}"
+     size: "{{ gluster_infra_lv_thicklvsize }}"

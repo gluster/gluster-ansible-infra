@@ -8,22 +8,22 @@
 - name: Open/Close firewalld ports
   firewalld:
         port: "{{ item }}"
-        permanent: "{{ glusterfs_infra_fw_permanent | default('false') }}"
-        state: "{{ glusterfs_infra_fw_state }}"
-        zone: "{{ glusterfs_infra_fw_zone | default('public') }}"
+        permanent: "{{ gluster_infra_fw_permanent | default('false') }}"
+        state: "{{ gluster_infra_fw_state }}"
+        zone: "{{ gluster_infra_fw_zone | default('public') }}"
         immediate: "{{ item.immediate | default('yes') }}"
-  with_items: "{{ glusterfs_infra_fw_ports }}"
-  when: glusterfs_infra_fw_ports is defined
+  with_items: "{{ gluster_infra_fw_ports }}"
+  when: gluster_infra_fw_ports is defined
 
 - name: Add/Delete services to firewalld rules
   firewalld:
         service: "{{ item }}"
-        permanent: "{{ glusterfs_infra_fw_permanent | defined('false') }}"
-        state: "{{ glusterfs_infra_fw_state }}"
-        zone: "{{ glusterfs_infra_fw_zone | default('public') }}"
-        immediate: "{{ glusterfs_infra_fw_immediate | default('yes') }}"
-  with_items: "{{ glusterfs_infra_fw_services }}"
-  when: glusterfs_infra_fw_services is defined
+        permanent: "{{ gluster_infra_fw_permanent | default('false') }}"
+        state: "{{ gluster_infra_fw_state }}"
+        zone: "{{ gluster_infra_fw_zone | default('public') }}"
+        immediate: "{{ gluster_infra_fw_immediate | default('yes') }}"
+  with_items: "{{ gluster_infra_fw_services }}"
+  when: gluster_infra_fw_services is defined
   # Should we ignore errors?
 
 - name: Reload the firewall

@@ -1,16 +1,16 @@
 ---
-# tasks file for glusterfs.infra
+# tasks file for gluster.infra
 - name: Add firewall rules
   import_role:
-    name: "glusterfs.infra/roles/firewall_config"
+    name: "gluster.infra/roles/firewall_config"
   when: >
-     glusterfs_infra_fw_ports is defined or
-     glusterfs_infra_fw_services is defined
+     gluster_infra_fw_ports is defined or
+     gluster_infra_fw_services is defined
   tags:
     - firewall
 
 - name: Configure the bricks
   import_role:
-    name: "glusterfs.infra/roles/backend_setup"
+    name: "gluster.infra/roles/backend_setup"
   tags:
     - backend_setup

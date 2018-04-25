@@ -7,16 +7,16 @@
 
   vars:
      # Create a vdo
-     glusterfs_infra_vdo:
+     gluster_infra_vdo:
         - { name: 'foo', device: '/dev/vdb' }
 
      # Variables for creating volume group
-     glusterfs_infra_vg_name: vdo_vg
-     glusterfs_infra_disktype: RAID6
+     gluster_infra_vg_name: vdo_vg
+     gluster_infra_disktype: RAID6
 
      # RAID6 and RAID10 diskcount
-     glusterfs_infra_diskcount: 10
-     glusterfs_infra_stripe_unit_size: 128
+     gluster_infra_diskcount: 10
+     gluster_infra_stripe_unit_size: 128
 
   roles:
-    - glusterfs.infra
+    - gluster.infra

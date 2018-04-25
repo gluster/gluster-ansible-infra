@@ -5,50 +5,50 @@
 # Create PV for setting up cache with dataalignment of 256K for SSDs.
 # Extend the existing volume group with the SSD
 # To extend the vg, pvs should list the earlier pv as well.
-- name: Extend volume group - "{{ glusterfs_infra_vg_name }}"
+- name: Extend volume group - "{{ gluster_infra_vg_name }}"
   lvg:
      state: present
-     vg: "{{ glusterfs_infra_vg_name }}"
-     pvs: "{{ glusterfs_infra_pvs }},{{ glusterfs_infra_ssd_disk }}"
+     vg: "{{ gluster_infra_vg_name }}"
+     pvs: "{{ gluster_infra_pvs }},{{ gluster_infra_ssd_disk }}"
      pv_options: "--dataalignment 256K"
 
-- name: Change attributes of LV - "{{glusterfs_infra_lv_thinpoolname}}"
+- name: Change attributes of LV - "{{gluster_infra_lv_thinpoolname}}"
   lvol:
      state: present
-     vg: "{{ glusterfs_infra_vg_name }}"
-     thinpool: "{{ glusterfs_infra_lv_thinpoolname }}"
+     vg: "{{ gluster_infra_vg_name }}"
+     thinpool: "{{ gluster_infra_lv_thinpoolname }}"
      opts: " --zero n "
 
-- name: Create LV for cache - "{{glusterfs_infra_lv_cachelvname}}"
+- name: Create LV for cache - "{{gluster_infra_lv_cachelvname}}"
   lvol:
      state: present
-     vg: "{{ glusterfs_infra_vg_name }}"
-     lv: "{{ glusterfs_infra_lv_cachelvname }}"
-     size: "{{ glusterfs_infra_lv_cachelvsize }}"
+     vg: "{{ gluster_infra_vg_name }}"
+     lv: "{{ gluster_infra_lv_cachelvname }}"
+     size: "{{ gluster_infra_lv_cachelvsize }}"
 
-- name: Create metadata LV for cache - "{{glusterfs_infra_lv_cachemetalvname}}"
+- name: Create metadata LV for cache - "{{gluster_infra_lv_cachemetalvname}}"
   lvol:
      state: present
-     vg: "{{ glusterfs_infra_vg_name }}"
-     lv: "{{ glusterfs_infra_lv_cachemetalvname }}"
-     size: "{{ glusterfs_infra_lv_cachemetalvsize }}"
-  when: glusterfs_infra_lv_cachemetalvname is defined
+     vg: "{{ gluster_infra_vg_name }}"
+     lv: "{{ gluster_infra_lv_cachemetalvname }}"
+     size: "{{ gluster_infra_lv_cachemetalvsize }}"
+  when: gluster_infra_lv_cachemetalvname is defined
 
 - name: Set variables for setting metadata
   set_fact:
-     pool_metadata: " --poolmetadata {{ glusterfs_infra_lv_cachemetalvname}} "
-  when: glusterfs_infra_lv_cachemetalvname is defined
+     pool_metadata: " --poolmetadata {{ gluster_infra_lv_cachemetalvname}} "
+  when: gluster_infra_lv_cachemetalvname is defined
 
 - name: Convert logical volume to a cache pool LV
   command: >
      lvconvert -y --type cache-pool {{ pool_metadata | default('') }}
         --poolmetadataspare n
-        --cachemode {{glusterfs_infra_cachemode | default('writethrough')}}
-        "/dev/{{glusterfs_infra_vg_name}}/{{glusterfs_infra_lv_cachelvname}}"
+        --cachemode {{gluster_infra_cachemode | default('writethrough')}}
+        "/dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_cachelvname}}"
 
 # Run lvs -a -o +devices to see the cache settings
 - name: Convert an existing logical volume to a cache LV
   command: >
      lvconvert -y --type cache --cachepool
-       "/dev/{{glusterfs_infra_vg_name}}/{{glusterfs_infra_lv_cachelvname}}"
-       " /dev/{{glusterfs_infra_vg_name}}/{{glusterfs_infra_lv_thinpoolname}}"
+       "/dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_cachelvname}}"
+       " /dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_thinpoolname}}"
