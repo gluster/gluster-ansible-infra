@@ -57,4 +57,4 @@
      pvs: "{{ gluster_infra_pvs }}"
      pv_options: "--dataalignment {{ pv_dataalign }}"
      # pesize is 4m by default for JBODs
-     pesize: "{{ vg_pesize | default(4) }}"
+     pesize: "{{ vg_pesize|int | default(4) }}"
