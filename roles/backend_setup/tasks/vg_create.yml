@@ -32,9 +32,10 @@
 # division by 1024 can be removed.
 - name: Set VG physical extent size for RAID
   set_fact:
-     vg_pesize: >
+     vg_pe: >
          {{ gluster_infra_diskcount|int *
             gluster_infra_stripe_unit_size|int / 1024 }}
+     vg_pesize: "{{vg_pe|int }}"
   when: >
      gluster_infra_disktype == 'RAID6' or
      gluster_infra_disktype == 'RAID10'
