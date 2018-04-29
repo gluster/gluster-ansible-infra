@@ -5,7 +5,7 @@
         state: started
         name: firewalld
 
-- name: check if required variablea are set
+- name: check if required variables are set
   fail:
     msg: "gluster_infra_fw_state is undefined"
   when: gluster_infra_fw_state is not defined
