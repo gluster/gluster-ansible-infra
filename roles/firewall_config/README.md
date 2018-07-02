@@ -37,7 +37,7 @@ Configure the ports and services related to GlusterFS:
 ---
 - name: Setting up backend
   remote_user: root
-  hosts: servers
+  hosts: gluster_servers
   gather_facts: false
 
   vars:
