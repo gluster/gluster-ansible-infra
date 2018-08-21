@@ -21,7 +21,6 @@ Role Variables
 -----------------
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_vdo_state | present / absent  | present   | Optional variable, default is taken as present. |
 | gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. name and device are the keys, see examples for syntax. |
 | gluster_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
 | gluster_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
@@ -51,6 +50,7 @@ If the backend disk has to be configured with VDO the variable gluster_infra_vdo
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. name and device are the keys, see examples for syntax. |
 
+
 ```
 For Example:
 gluster_infra_vdo:
@@ -58,6 +58,30 @@ gluster_infra_vdo:
    - { name: 'hc_vdo_2', device: '/dev/vdc' }
    - { name: 'hc_vdo_3', device: '/dev/vdd' }
 ```
+
+The gluster_infra_vdo variable supports the following keys:
+
+| VDO Key                 | Default value         | Comments                          |
+|--------------------------|-----------------------|-----------------------------------|
+| state | present | VDO state, if present VDO will be created, if absent VDO will be deleted. |
+| activated | 'yes' | Whether VDO has to be activated upon creation. |
+| running | 'yes' | Whether VDO has to be started |
+| logicalsize | UNDEF | Logical size for the vdo |
+| compression | 'enabled' | Whether compression has to be enabled |
+| blockmapcachesize | '128M' | The amount of memory allocated for caching block map pages, in megabytes (or may be issued with an LVM-style suffix of K, M, G, or T). The default (and minimum) value is 128M. |
+| readcache | 'disabled' | Enables or disables the read cache. |
+| readcachesize | 0 | Specifies the extra VDO device read cache size in megabytes. |
+| emulate512 | 'off' | Enables 512-byte emulation mode, allowing drivers or filesystems to access the VDO volume at 512-byte granularity, instead of the default 4096-byte granularity. |
+| slabsize | '2G' | The size of the increment by which the physical size of a VDO volume is grown, in megabytes (or may be issued with an LVM-style suffix of K, M, G, or T). Must be a power of two between 128M and 32G. |
+| writepolicy | 'sync' | Specifies the write policy of the VDO volume. The 'sync' mode acknowledges writes only after data is on stable storage. |
+| indexmem | '0.25' | Specifies the amount of index memory in gigabytes. |
+| indexmode | 'dense' | Specifies the index mode of the Albireo index. |
+| ackthreads | '1' | Specifies the number of threads to use for acknowledging completion of requested VDO I/O operations. Valid values are integer values from 1 to 100 (lower numbers are preferable due to overhead). The default is 1.|
+| biothreads | '4' | Specifies the number of threads to use for submitting I/O operations to the storage device. Valid values are integer values from 1 to 100 (lower numbers are preferable due to overhead). The default is 4. |
+| cputhreads | '2' | Specifies the number of threads to use for CPU-intensive work such as hashing or compression. Valid values are integer values from 1 to 100 (lower numbers are preferable due to overhead). The default is 2. |
+| logicalthreads | '1' | Specifies the number of threads across which to subdivide parts of the VDO processing based on logical block addresses. Valid values are integer values from 1 to 100 (lower numbers are preferable due to overhead). The default is 1.|
+| physicalthreads | '1' | Specifies the number of threads across which to subdivide parts of the VDO processing based on physical block addresses. Valid values are integer values from 1 to 16 (lower numbers are preferable due to overhead). The physical space used by the VDO volume must be larger than (slabsize * physicalthreads). The default is 1. |
+
 
 #### Logical Volume variable
 -----------------------
@@ -96,7 +120,7 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 ---
 - name: Setting up backend
   remote_user: root
-  hosts: servers
+  hosts: gluster_servers
   gather_facts: false
 
   vars:
