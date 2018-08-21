@@ -1,16 +1,16 @@
 gluster.infra
 =========
 
-This role helps the user to get started in deploying GlusterFS filesystem. The
-gluster.infra role has multiple sub-roles which are invoked depending on the
-variables that are set. The sub-roles are
+The  gluster.infra role allows the user to deploy a GlusterFS cluster. It has sub-roles which can be invoked by setting the variables. The sub-roles are
 
-1. firewall_config - Set up firewall rules (open ports, add services to zone)
+1. firewall_config: 
+         Set up firewall rules (open ports, add services to zone)
 2. backend_setup:
-        - Create VDO volume (If vdo is opted) 
-        - Create volume groups, logical volumes (thinpool, thin lv, thick lv)
-        - Create xfs filesystem
-        - Mount the filesystem
+
+        Create VDO volume (If vdo is selected)        
+        Create volume groups, logical volumes (thinpool, thin lv, thick lv)        
+        Create xfs filesystem        
+        Mount the filesystem
 
 Requirements
 ------------
