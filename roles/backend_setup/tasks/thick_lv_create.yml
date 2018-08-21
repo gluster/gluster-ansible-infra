@@ -3,5 +3,6 @@
   lvol:
      state: present
      vg: "{{ gluster_infra_vg_name }}"
-     lv: "{{ gluster_infra_lv_thicklvname }}"
-     size: "{{ gluster_infra_lv_thicklvsize }}"
+     lv: "{{ item.name }}"
+     size: "{{ item.size }}"
+  with_items: "{{ gluster_infra_thick_lvs }}"

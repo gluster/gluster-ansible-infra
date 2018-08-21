@@ -31,8 +31,7 @@ Role Variables
 | gluster_infra_lv_thinpoolname || glusterfs_thinpool | Optional variable. If omitted glusterfs_thinpool is used for thinpoolname. |
 | gluster_infra_lv_thinpoolsize || 100%FREE | Thinpool size, if not set, entire disk is used. Include the unit [G\|M\|K] |
 | gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname and lvsize. See below for example. |
-| gluster_infra_lv_thicklvname || gluster_infra_lv_thicklvname | Optional. Needed only if thick volume has to be created. The variable will have default name gluster_infra_lv_thicklvname if thicklvsize is defined. |
-| gluster_infra_lv_thicklvsize || UNDEF | Optional. Needed only if thick volume has to be created. Include the unit [G\|M\|K]|
+| gluster_infra_thick_lvs || UNDEF | Optional. Needed only if thick volume has to be created. This is a dictionary with name and size as keys. See below for example |
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, and lv are the keys. |
 | gluster_infra_ssd_disk | | UNDEF | SSD disk for cache setup, specific to HC setups. Should be absolute path. e.g /dev/sdc |
 | gluster_infra_lv_cachelvname | | glusterfs_ssd_cache | Optional variable, if omitted glusterfs_ssd_cache is used by default. |
@@ -96,6 +95,21 @@ gluster_infra_lv_logicalvols:
    - { lvname: 'hc_data', lvsize: '500G' }
 ```
 
+#### Thick LV variable
+-----------------------
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| gluster_infra_thick_lvs || UNDEF | This is a list of hash/dictionary variables, with keys, name and size. See below for example. |
+
+
+```
+For Example:
+gluster_infra_thick_lvs:
+   - { name: 'thick_lv_1', size: '500G' }
+   - { name: 'thick_lv_2', size: '100G' }
+```
+
+
 #### Variables for mounting the filesystem
 -----------------------------------------
 | Name                     |Choices| Default value         | Comments                          |
@@ -106,7 +120,7 @@ gluster_infra_lv_logicalvols:
 For example:
 gluster_infra_mount_devices:
         - { path: '/mnt/thinv', lv: <lvname> }
-        - { path: '/mnt/thicklv', lv: "{{ gluster_infra_lv_thicklvname }}" }
+        - { path: '/mnt/thicklv', lv: 'thick_lv_1' }
 ```
 
 
@@ -148,8 +162,9 @@ Configure the ports and services related to GlusterFS, create logical volumes an
      gluster_infra_pvs: /dev/vdb,/dev/vdc
 
      # Create a thick volume name
-     gluster_infra_lv_thicklvname: glusterfs_thicklv
-     gluster_infra_lv_thicklvsize: 20G
+     gluster_infra_thick_lvs:
+       { name: 'glusterfs_thicklv', size: '50G' }
+
 
      # Create a thinpool
      gluster_infra_lv_thinpoolname: glusterfs_thinpool
@@ -164,7 +179,7 @@ Configure the ports and services related to GlusterFS, create logical volumes an
      # Mount the devices
      gluster_infra_mount_devices:
         - { path: '/mnt/thinv', lv: 'glusterfs_thinlv' }
-        - { path: '/mnt/thicklv', lv: "{{ gluster_infra_lv_thicklvname }}" }
+        - { path: '/mnt/thicklv', lv: 'glusterfs_thicklv' }
 
   roles:
      - gluster.infra

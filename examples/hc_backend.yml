@@ -17,7 +17,8 @@
      gluster_infra_stripe_unit_size: 128
 
      # Set the size for thick volume
-     gluster_infra_lv_thicklvsize: 20G
+     gluster_infra_thick_lvs:
+       - { name: 'hc_engine', size: '20G' }
 
      # Create thin logical volumes
      gluster_infra_lv_logicalvols:
