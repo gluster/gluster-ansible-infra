@@ -18,7 +18,7 @@
 # If a thick volume is requested for the same vg
 - name: Create a thick logical volume
   import_tasks: thick_lv_create.yml
-  when: gluster_infra_lv_thicklvsize is defined
+  when: gluster_infra_thick_lvs is defined
   tags:
     - thickvol
 
