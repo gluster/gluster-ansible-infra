@@ -41,7 +41,7 @@
 
 - name: Set the PE size
   set_fact:
-     vg_pesize: "{{ vg_pe | int }}"
+     vg_pesize: "{{ vg_pe | int + 0.5 | round | int }}"
   when: >
      gluster_infra_disktype == 'RAID6' or
      gluster_infra_disktype == 'RAID10'
