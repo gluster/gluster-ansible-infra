@@ -2,7 +2,7 @@
 %global docdir %{_datadir}/doc/gluster.infra
 
 Name:      gluster-ansible-infra
-Version:   0.1
+Version:   0.2
 Release:   1%{?dist}
 Summary:   Ansible roles for GlusterFS infrastructure management
 
@@ -38,6 +38,8 @@ cp -dpr README.md examples %{buildroot}/%{docdir}
 %license LICENSE
 
 %changelog
+* Fri Aug 31 2018 Sachidananda Urs <sac@redhat.com> 0.2
+- Backend setup enhancements
+
 * Tue Apr 24 2018 Sachidananda Urs <sac@redhat.com> 0.1
 - Initial release.
-
