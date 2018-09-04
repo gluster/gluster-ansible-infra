@@ -26,22 +26,11 @@
       gluster_infra_disktype == 'RAID6' or
       gluster_infra_disktype == 'RAID10'
 
-# Set pesize for RAID disktypes while creating a volume group
-# By default the `lvg' module expects size in MiB: divide by 1024.
-# Once issue: https://github.com/ansible/ansible/issues/38103 is resolved the
-# division by 1024 can be removed.
 - name: Set VG physical extent size for RAID
   set_fact:
-     vg_pe: >
+     vg_pesize: >
          {{ gluster_infra_diskcount|int *
-            gluster_infra_stripe_unit_size|int / 1024 }}
-  when: >
-     gluster_infra_disktype == 'RAID6' or
-     gluster_infra_disktype == 'RAID10'
-
-- name: Set the PE size
-  set_fact:
-     vg_pesize: "{{ vg_pe | int }}"
+            gluster_infra_stripe_unit_size|int }}K
   when: >
      gluster_infra_disktype == 'RAID6' or
      gluster_infra_disktype == 'RAID10'
