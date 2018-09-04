@@ -28,13 +28,15 @@
         - { lvname: 'glusterstore_thinlv', lvsize: '500G' }
 
      # Create a thick volume name
-     gluster_infra_lv_thicklvname: glusterfs_thicklv
-     gluster_infra_lv_thicklvsize: 20G
+     gluster_infra_thick_lvs:
+       - { name: 'thick_lv1', size: '100G' }
+       - { name: 'thick_lv2', size: '500G' }
 
      # Mount the devices
      gluster_infra_mount_devices:
         - { path: '/mnt/thinv',   lv: glusterstore_thinlv }
-        - { path: '/mnt/thicklv', lv: "{{ gluster_infra_lv_thicklvname }}"}
+        - { path: '/mnt/thicklv1', lv: 'thick_lv1' }
+        - { path: '/mnt/thicklv2', lv: 'thick_lv2' }
 
   roles:
      - gluster.infra

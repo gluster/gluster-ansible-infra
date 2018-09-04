@@ -27,8 +27,9 @@
   set_fact:
      gluster_infra_fscreate_lvs:
          "{{gluster_infra_fscreate_lvs|default([])}} +
-          ['{{gluster_infra_lv_thicklvname}}']"
-  when: gluster_infra_lv_thicklvsize is defined
+          ['{{item.name}}']"
+  when: gluster_infra_thick_lvs is defined
+  with_items: "{{ gluster_infra_thick_lvs }}"
 
 # We support only XFS. Filesysem options sw, su are specific to XFS
 - name: Create a filesystem on the disks
