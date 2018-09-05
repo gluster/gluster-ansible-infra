@@ -1,0 +1,33 @@
+# Set a disk type - Default: JBOD
+# Options: JBOD, RAID6, RAID10
+gluster_infra_disktype: RAID6
+
+# RAID6 and RAID10 diskcount
+gluster_infra_diskcount: 10
+
+# Stripe unit size always in KiB
+gluster_infra_stripe_unit_size: 128
+
+# Variables for creating volume group
+#
+gluster_infra_vg_name: glusterfs_backend_vg
+gluster_infra_pvs: /dev/sdb
+
+# Create a thinpool
+gluster_infra_lv_thinpoolname: glusterfs_backend_thinpool
+
+# Create a thin volume
+gluster_infra_lv_logicalvols:
+  - { lvname: 'glusterstore_thinlv', lvsize: '5G' }
+
+# Create a thick volume name
+gluster_infra_thick_lvs:
+  - { name: 'thick_lv1', size: '1G' }
+  - { name: 'thick_lv2', size: '2G' }
+
+# Mount the devices
+gluster_infra_mount_devices:
+  - { path: '/mnt/thinv',   lv: glusterstore_thinlv }
+  - { path: '/mnt/thicklv1', lv: 'thick_lv1' }
+  - { path: '/mnt/thicklv2', lv: 'thick_lv2' }
+
