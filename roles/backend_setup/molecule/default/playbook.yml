@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  roles:
+    - role: backend_setup
+      vars:
+        gluster_infra_disktype: RAID6

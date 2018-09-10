@@ -51,7 +51,7 @@
 - name: Set the vdo disks
   set_fact:
      gluster_infra_pvs:
-         "/dev/mapper/{{gluster_infra_vdo|map(attribute='name')|
+        "/dev/mapper/{{gluster_infra_vdo|map(attribute='name')|
                         join(',/dev/mapper/') }}"
   when: gluster_infra_vdo is defined
 

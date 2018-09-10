@@ -19,14 +19,14 @@
 - name: Get the list of logical volumes for setup
   set_fact:
      gluster_infra_fscreate_lvs:
-         "{{ gluster_infra_lv_logicalvols|map(attribute='lvname')|list }}"
+        "{{ gluster_infra_lv_logicalvols|map(attribute='lvname')|list }}"
   when: gluster_infra_lv_logicalvols is defined
 
 # Do we have a thick volume?
 - name: Get the thick volumes to create filesysem
   set_fact:
      gluster_infra_fscreate_lvs:
-         "{{gluster_infra_fscreate_lvs|default([])}} +
+        "{{gluster_infra_fscreate_lvs|default([])}} +
           ['{{item.name}}']"
   when: gluster_infra_thick_lvs is defined
   with_items: "{{ gluster_infra_thick_lvs }}"

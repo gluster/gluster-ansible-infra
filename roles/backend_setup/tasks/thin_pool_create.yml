@@ -33,4 +33,3 @@
      opts: " --chunksize {{ lv_chunksize }}
              --poolmetadatasize {{ gluster_infra_lv_poolmetadatasize }}
              --zero n"
-
