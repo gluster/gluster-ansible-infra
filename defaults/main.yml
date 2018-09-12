@@ -8,8 +8,6 @@ gluster_infra_fw_zone: public
 # Defaults for backend setup
 gluster_infra_disktype: JBOD
 gluster_infra_vdo_state: present
-gluster_infra_vg_name: glusterfs_vg
 gluster_infra_lv_cachelvname: glusterfs_ssd_cache
 # GlusterFS recommends 16G, if it has to be overridden set
 # this variable in playbooks
-gluster_infra_lv_poolmetadatasize: 16G

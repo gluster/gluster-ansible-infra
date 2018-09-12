@@ -18,22 +18,23 @@
 
      # Set the size for thick volume
      gluster_infra_thick_lvs:
-       - { name: 'hc_engine', size: '20G' }
+       - { vgname: 'vg_sdb', lvname: 'hc_engine', size: '20G' }
 
      # Create thin logical volumes
      gluster_infra_lv_logicalvols:
-        - { lvname: 'hc_images', lvsize: '500G' }
-        - { lvname: 'hc_data', lvsize: '500G' }
+        - { vgname: 'vg_sdb', lvname: 'hc_images', lvsize: '500G' }
+        - { vgname: 'vg_sdc', lvname: 'hc_data', lvsize: '500G' }
 
      # Setup cache on the disks
      gluster_infra_ssd_disk: /dev/vdd
+     gluster_infra_ssd_vgname: 'vg_sdc'
      gluster_infra_lv_cachelvsize: 20G
 
      # Mount the devices
      gluster_infra_mount_devices:
-        - { path: '/mnt/images', lv: hc_images }
-        - { path: '/mnt/engine', lv: glusterfs_thicklv }
-        - { path: '/mnt/data',   lv: hc_data   }
+        - { path: '/mnt/images', vgname: 'vg_sdb', lv: hc_images }
+        - { path: '/mnt/engine', vgname: 'vg_sdc', lv: glusterfs_thicklv }
+        - { path: '/mnt/data',   vgname: 'vg_sdc', lv: hc_data   }
 
   roles:
     - gluster.infra

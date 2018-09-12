@@ -7,11 +7,9 @@
 
   vars:
      # Variables for creating volume group
-     gluster_infra_vg_name: glusterfs_vg
+     gluster_infra_volume_groups:
+        - {vgname: 'glusterfs_vg', pvname: '/dev/mapper/foo,/dev/mapper/bar'}
 
-     # Note: The _pvs variable is not needed when cachesetup is done along with
-     # vdo creation, since vg role takes care of generating this variable
-     gluster_infra_pvs: /dev/mapper/foo,/dev/mapper/bar
      gluster_infra_ssd_disk: /dev/vdd
      gluster_infra_lv_cachelvsize: 100M
 

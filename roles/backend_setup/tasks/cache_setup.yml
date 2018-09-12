@@ -2,34 +2,41 @@
 # This playbook sets up lvm cache. Primarily written for the hyperconverged
 # setup.
 
+# If the ssd_disk is provided then ssd_vgname has to be provided
+- fail:
+    msg: "If gluster_infra_ssd_disk is provided gluster_infra_ssd_vgname is needed"
+  when: gluster_infra_ssd_disk is defined and
+        gluster_infra_ssd_vgname is not defined
+
+
 # Create PV for setting up cache with dataalignment of 256K for SSDs.
 # Extend the existing volume group with the SSD
 # To extend the vg, pvs should list the earlier pv as well.
-- name: Extend volume group - "{{ gluster_infra_vg_name }}"
+- name: Extend volume group
   lvg:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
+     vg: "{{ gluster_infra_ssd_vgname }}"
      pvs: "{{ gluster_infra_pvs }},{{ gluster_infra_ssd_disk }}"
      pv_options: "--dataalignment 256K"
 
-- name: Change attributes of LV - "{{gluster_infra_lv_thinpoolname}}"
+- name: Change attributes of LV
   lvol:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
-     thinpool: "{{ gluster_infra_lv_thinpoolname }}"
+     vg: "{{ gluster_infra_ssd_vgname }}"
+     thinpool: "{{ gluster_infra_ssd_thinpoolname }}"
      opts: " --zero n "
 
-- name: Create LV for cache - "{{gluster_infra_lv_cachelvname}}"
+- name: Create LV for cache
   lvol:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
+     vg: "{{ gluster_infra_ssd_vgname }}"
      lv: "{{ gluster_infra_lv_cachelvname }}"
      size: "{{ gluster_infra_lv_cachelvsize }}"
 
-- name: Create metadata LV for cache - "{{gluster_infra_lv_cachemetalvname}}"
+- name: Create metadata LV for cache
   lvol:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
+     vg: "{{ gluster_infra_ssd_vgname }}"
      lv: "{{ gluster_infra_lv_cachemetalvname }}"
      size: "{{ gluster_infra_lv_cachemetalvsize }}"
   when: gluster_infra_lv_cachemetalvname is defined
@@ -44,11 +51,9 @@
      lvconvert -y --type cache-pool {{ pool_metadata | default('') }}
         --poolmetadataspare n
         --cachemode {{gluster_infra_cachemode | default('writethrough')}}
-        "/dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_cachelvname}}"
+        "/dev/{{gluster_infra_ssd_vgname}}/{{gluster_infra_lv_cachelvname}}"
 
 # Run lvs -a -o +devices to see the cache settings
 - name: Convert an existing logical volume to a cache LV
   command: >
-     lvconvert -y --type cache --cachepool
-       "/dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_cachelvname}}"
-       " /dev/{{gluster_infra_vg_name}}/{{gluster_infra_lv_thinpoolname}}"
+     lvconvert -y --type cache --cachepool "/dev/{{gluster_infra_ssd_vgname}}/{{gluster_infra_lv_cachelvname}}" "/dev/{{gluster_infra_ssd_vgname}}/{{gluster_infra_ssd_thinpoolname}}"

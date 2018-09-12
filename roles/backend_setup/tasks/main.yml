@@ -1,6 +1,4 @@
 ---
-# tasks file for backend-setup
-
 # A vdo is created an will be used for setting up bricks instead of physical
 # volumes
 - name: Create a vdo disk
@@ -11,7 +9,7 @@
 
 - name: Create a volume group
   import_tasks: vg_create.yml
-  when: gluster_infra_vg_name is defined
+  when: gluster_infra_volume_groups is defined
   tags:
      - vgcreate
 
@@ -25,7 +23,7 @@
 # Create a thinpool for the given volume group
 - name: Create thin pool
   import_tasks: thin_pool_create.yml
-  when: gluster_infra_lv_thinpoolname is defined
+  when: gluster_infra_thinpools is defined
   tags:
     - thinpool
 
@@ -43,11 +41,10 @@
   tags:
     - cachesetup
 
-# Create a filesystem on the disks. There is no `when:'
-# directive for this, fscreate happens anyway.
+# Create a filesystem on the disks.
 - name: Create a filesystem on the disks
   import_tasks: fscreate.yml
-  # when: gluster_infra_fscreate_lvs is defined
+  when: gluster_infra_lv_logicalvols is defined
   tags:
     - fscreate
 
