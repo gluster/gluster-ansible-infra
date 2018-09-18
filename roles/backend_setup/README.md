@@ -25,20 +25,12 @@ Role Variables
 | gluster_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
 | gluster_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
 | gluster_infra_volume_groups  || | Mandatory variable, key/value pairs of vgname and pvname. pvname can be comma-separated values if more than a single pv is needed for a vg. See below for syntax. |
-| gluster_infra_pvs  | | UNDEF | Comma-separated list of physical devices. If vdo is used this variable can be omitted. |
 | gluster_infra_stripe_unit_size || UNDEF| Stripe unit size (KiB). *DO NOT* including trailing 'k' or 'K'  |
 | gluster_infra_thinpools || | Thinpool data. This is a dictionary with keys vgname, thinpoolname, thinpoolsize, and poolmetadatasize. See below for syntax and example. |
 | gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname and lvsize. See below for example. |
 | gluster_infra_thick_lvs || UNDEF | Optional. Needed only if thick volume has to be created. This is a dictionary with vgname, lvname, and size as keys. See below for example |
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lv are the keys. |
-| gluster_infra_ssd_disk | | UNDEF | SSD disk for cache setup, specific to HC setups. Should be absolute path. e.g /dev/sdc |
-| gluster_infra_ssd_vgname | | UNDEF | The volume group to be used for setting up cache. |
-| gluster_infra_ssd_thinpoolname || UNDEF | Thinpool that has to be created on SSD and used while setting cache. |
-| gluster_infra_lv_cachelvname | | glusterfs_ssd_cache | Optional variable, if omitted glusterfs_ssd_cache is used by default. |
-| gluster_infra_lv_cachelvsize | | UNDEF | Size of the cache logical volume. Used only while setting up cache. |
-| gluster_infra_lv_cachemetalvname | | UNDEF | Optional. Cache metadata volume name. |
-| gluster_infra_lv_cachemetalvsize | | UNDEF | Optional. Cache metadata volume size. |
-| gluster_infra_cachemode | | writethrough | Optional. If omitted writethrough is used. |
+| gluster_infra_cache_vars | | UNDEF | This variable contains list of dictionaries for setting up LV cache. Variable has following keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode. The keys are explained in more detail below|
 
 
 #### VDO Variable
@@ -139,6 +131,28 @@ gluster_infra_thinpools:
 * thinpoolname: Can be ignored, a name is formed using the given vgname followed by '_thinpool'
 * vgname: Name of the volume group this thinpool should belong to.
 
+#### Variables for setting up cache
+-----------------------------------------
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| gluster_infra_cache_vars | | UNDEF | This is a dictionary with keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode |
+
+```
+vgname - The vg which will be extended to setup cache.
+cachedisk - The SSD disk which will be used to setup cache. Complete path, for eg: /dev/sdd
+cachethinpoolname - The existing thinpool on the volume group mentioned above.
+cachelvname - Logical volume name for setting up cache, an lv with this name is created.
+cachelvsize - Cache logical volume size
+cachemetalvname - Meta LV name.
+cachemetalvsize - Meta LV size
+cachemode - Cachemode, default is writethrough.
+```
+
+For example:
+```
+   - { vgname: 'vg_vdb', cachedisk: '/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
+```
+
 
 #### Variables for mounting the filesystem
 -----------------------------------------
@@ -189,7 +203,6 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 
      # Variables for creating volume group
      gluster_infra_vg_name: glusterfs_vg
-     gluster_infra_pvs: /dev/vdb,/dev/vdc
 
      # Create a thick volume name
      gluster_infra_thick_lvs:

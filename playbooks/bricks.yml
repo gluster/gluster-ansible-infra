@@ -1,7 +1,3 @@
-# gluster_infra_pvs
-gluster_infra_pvs: /dev/vdc
-
-
 # gluster_infra_disktype
 # Set a disk type. Options: JBOD, RAID6, RAID10 - Default: JBOD
 #
@@ -62,16 +58,12 @@ gluster_infra_lv_logicalvols:
    - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
 
 
-# # Setting up cache using SSD disks
-gluster_infra_ssd_disk: /dev/vdd
-gluster_infra_ssd_vgname: vg_vdc
-gluster_infra_ssd_thinpoolname: bar_thinpool
-gluster_infra_lv_cachelvname: ssd_cachelv
-gluster_infra_lv_cachelvsize: 20G
-gluster_infra_lv_cachemetalvname: ssd_cachemeta
-gluster_infra_lv_cachemetalvsize: 100M
-# Cachemode default is writethrough
-gluster_infra_cachemode: writethrough
+# Setting up cache using SSD disks
+gluster_infra_cache_vars:
+   - { vgname: 'vg_vdb', cachedisk: '/dev/vdd',
+       cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv',
+       cachelvsize: '20G', cachemetalvname: 'cachemeta',
+       cachemetalvsize: '100M', cachemode: 'writethrough' }
 
 
 # gluster_infra_mount_devices

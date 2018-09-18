@@ -37,7 +37,7 @@
 # Setup cache on the given SSD
 - name: Setup cache
   import_tasks: cache_setup.yml
-  when: gluster_infra_ssd_disk is defined
+  when: gluster_infra_cache_vars is defined
   tags:
     - cachesetup
 
