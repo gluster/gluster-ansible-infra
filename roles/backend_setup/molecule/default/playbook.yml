@@ -5,3 +5,25 @@
     - role: backend_setup
       vars:
         gluster_infra_disktype: RAID6
+        gluster_infra_diskcount: 10
+        gluster_infra_stripe_unit_size: 128
+        gluster_infra_fscreate_lvs: gd
+        gluster_infra_vg_name: glusterfs_vg
+        gluster_infra_pvs:
+          - /dev/loop0
+          - /dev/loop1
+        gluster_infra_thick_lvs:
+          - name: glusterfs_thicklv
+            size: 1G
+        gluster_infra_lv_thinpoolname: glusterfs_thinpool
+        gluster_infra_lv_thinpoolsize: 2G
+        gluster_infra_lv_logicalvols:
+          - lvname: hc_images
+            lvsize: 1G
+          - lvname: hc_data
+            lvsize: 1G
+        gluster_infra_mount_devices:
+          - path: /mnt/thinv
+            lv: glusterfs_thinlv
+          - path: /mnt/thicklv
+            lv: glusterfs_thicklv
