@@ -1,0 +1,14 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+  - name: Clean up loopback devices
+    command: "losetup -D"
+
+  - name: Remove data files
+    file:
+      path: "{{item.1}}"
+      state: absent
+    with_items:
+      - data0
+      - data1
