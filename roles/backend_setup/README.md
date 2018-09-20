@@ -186,6 +186,33 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 
 ```
 
+Tests
+-----
+This role can now be tested with molecule.
+
+### Dependencies
+This setup is currently verified with the following setup
+* Centos 7
+* Docker CE
+* Python 2
+
+As we verify our tests with more distributions, we will document them.
+
+### Installing
+* If you have SELinux enabled, run `yum install libselinux-python`.
+* Create a virtualenv with `virtualenv --system-site-packaes env`. The system
+  site packages are so that you can pick up the `libselinux-python` package.
+  This package is not available via PyPI.
+* Install the dependencies with `pip install ansible molecule docker-py`.
+
+### Running the tests
+Please verify the docker service is started and enabled before running the tests.
+
+Molecule tests can be triggered from the directory with the molecule folder.
+For triggering tests for this role, cd into this directory. Then run 
+`molecule test`. If any of the steps fail, the errors are usually hidden unless
+you re-run with 'molecule --debug test'.
+
 License
 -------
 
