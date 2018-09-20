@@ -198,15 +198,37 @@ This setup is currently verified with the following setup
 
 As we verify our tests with more distributions, we will document them.
 
-### Installing
-* If you have SELinux enabled, run `yum install libselinux-python`.
-* Create a virtualenv with `virtualenv --system-site-packaes env`. The system
-  site packages are so that you can pick up the `libselinux-python` package.
-  This package is not available via PyPI.
-* Install the dependencies with `pip install ansible molecule docker-py`.
+### Setup
+* Start and enable the Docker service with the following:
+
+        $ systemctl start docker
+        $ systemctl enable docker
+
+* Ensure that your user is in the docker group.
+
+        $ sudo groupadd docker
+        $ sudo usermod -aG docker $USER
+
+* Verify everything works with the following:
+
+        $ docker run hello-world
+
+* If you have SELinux enabled, run the following
+
+        $ sudo yum install libselinux-python
+
+* Create a virtualenv
+
+        $ virtualenv --system-site-packaes env
+
+  The system site packages are so that you can pick up the `libselinux-python`
+  package.  This package is not available via PyPI.
+
+* Install the python dependencies with
+
+        $ pip install ansible molecule docker-py
 
 ### Running the tests
-Please verify the docker service is started and enabled before running the tests.
 
 Molecule tests can be triggered from the directory with the molecule folder.
 For triggering tests for this role, cd into this directory. Then run 
