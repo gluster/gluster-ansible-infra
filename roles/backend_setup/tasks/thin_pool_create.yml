@@ -23,14 +23,14 @@
      lv_chunksize: '256K'
   when: gluster_infra_disktype == 'JBOD'
 
-
-- name: Create a LV thinpool - "{{gluster_infra_lv_thinpoolname}}"
+- name: Create a LV thinpool
   lvol:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
-     thinpool: "{{ gluster_infra_lv_thinpoolname }}"
-     size: "{{ gluster_infra_lv_thinpoolsize | default('100%FREE') }}"
+     vg: "{{ item.vgname }}"
+     thinpool: "{{ item.thinpoolname }}"
+     size: "{{ item.thinpoolsize | default('100%FREE') }}"
      opts: " --chunksize {{ lv_chunksize }}
-             --poolmetadatasize {{ gluster_infra_lv_poolmetadatasize }}
+             --poolmetadatasize {{ item.poolmetadatasize }}
              --zero n"
-
+  with_items: "{{ gluster_infra_thinpools }}"
+  when: gluster_infra_thinpools is defined

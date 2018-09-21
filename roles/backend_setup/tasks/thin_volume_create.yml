@@ -5,8 +5,8 @@
 - name: Create thin logical volume
   lvol:
      state: present
-     vg: "{{ gluster_infra_vg_name }}"
+     vg: "{{ item.vgname }}"
      lv: "{{ item.lvname }}"
-     thinpool: "{{ gluster_infra_lv_thinpoolname }}"
+     thinpool: "{{ item.thinpool }}"
      size: "{{ item.lvsize }}"
   with_items: "{{ gluster_infra_lv_logicalvols }}"

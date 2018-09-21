@@ -15,27 +15,22 @@
       gluster_infra_disktype == 'RAID6' or
       gluster_infra_disktype == 'RAID10'
 
-# Collect the disks from the input file
-- name: Get the list of logical volumes for setup
-  set_fact:
-     gluster_infra_fscreate_lvs:
-         "{{ gluster_infra_lv_logicalvols|map(attribute='lvname')|list }}"
-  when: gluster_infra_lv_logicalvols is defined
-
-# Do we have a thick volume?
-- name: Get the thick volumes to create filesysem
-  set_fact:
-     gluster_infra_fscreate_lvs:
-         "{{gluster_infra_fscreate_lvs|default([])}} +
-          ['{{item.name}}']"
-  when: gluster_infra_thick_lvs is defined
-  with_items: "{{ gluster_infra_thick_lvs }}"
 
 # We support only XFS. Filesysem options sw, su are specific to XFS
-- name: Create a filesystem on the disks
+- name: Create filesystem on thin logical vols
   filesystem:
      fstype: xfs
-     dev: "/dev/{{ gluster_infra_vg_name }}/{{ item }}"
+     dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('yes') }}"
-  with_items: "{{ gluster_infra_fscreate_lvs }}"
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  when: gluster_infra_lv_logicalvols is defined
+
+- name: Create filesystem on thick logical vols
+  filesystem:
+     fstype: xfs
+     dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
+     opts: "{{ fs_options }} {{ raid_options | default('') }}"
+     force: "{{ gluster_infra_fs_force | default('yes') }}"
+  with_items: "{{ gluster_infra_thick_lvs }}"
+  when: gluster_infra_thick_lvs is defined
