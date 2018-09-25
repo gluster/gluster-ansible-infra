@@ -1,0 +1,10 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+  - name: Install Dependency packages
+    yum:
+      name: firewalld
+      state: latest
+    with_items:
+      - glusterfs

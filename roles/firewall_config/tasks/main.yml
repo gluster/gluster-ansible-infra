@@ -7,7 +7,7 @@
 
 - name: check if required variables are set
   fail:
-    msg: "gluster_infra_fw_state is undefined"
+        msg: "gluster_infra_fw_state is undefined"
   when: gluster_infra_fw_state is not defined
 
 - name: Open/Close firewalld ports
@@ -31,5 +31,5 @@
   when: gluster_infra_fw_services is defined
   # Should we ignore errors?
 
-- name: Reload the firewall
-  shell: firewall-cmd --reload
+# - name: Reload the firewall
+#  shell: firewall-cmd --reload
