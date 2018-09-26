@@ -2,9 +2,12 @@
 - name: Prepare
   hosts: all
   tasks:
-  - name: Install Dependency packages
+  - name: Install Dependency Packages
     yum:
-      name: firewalld
+      name: "{{ packages }}"
       state: latest
-    with_items:
-      - glusterfs
+    vars:
+      packages:
+        - firewalld
+        - centos-release-gluster
+      name: glusterfs-server
