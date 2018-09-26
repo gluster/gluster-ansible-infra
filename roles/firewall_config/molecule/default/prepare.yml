@@ -10,4 +10,8 @@
       packages:
         - firewalld
         - centos-release-gluster
+
+  - name: Install Dependency Packages
+    yum:
       name: glusterfs-server
+      state: latest

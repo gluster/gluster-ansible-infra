@@ -12,3 +12,8 @@ def test_hosts_file(host):
     assert f.exists
     assert f.user == 'root'
     assert f.group == 'root'
+    cmd = host.run("firewall-cmd --list-all")
+    print cmd
+    print cmd.rc
+    print cmd.stdout
+    print cmd.stderr
