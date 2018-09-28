@@ -7,13 +7,17 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 def test_hosts_file(host):
-    f = host.file('/etc/hosts')
-
-    assert f.exists
-    assert f.user == 'root'
-    assert f.group == 'root'
     cmd = host.run("firewall-cmd --list-all")
-    print cmd
-    print cmd.rc
-    print cmd.stdout
-    print cmd.stderr
+    cmd.rc
+    cmd.stderr
+    for line in cmd.stdout.split("\n"):
+        if "services" in line:
+            assert "glusterfs" in line
+    for line in cmd.stdout.split("\n"):
+        if " ports:" in line:
+            assert "2049/tcp" in line
+            assert "54321/tcp" in line
+            assert "5900/tcp" in line
+            assert "5900-6923/tcp" in line
+            assert "5666/tcp" in line
+            assert "16514/tcp" in line
