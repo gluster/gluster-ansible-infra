@@ -44,7 +44,8 @@
 # Create a filesystem on the disks.
 - name: Create a filesystem on the disks
   import_tasks: fscreate.yml
-  when: gluster_infra_lv_logicalvols is defined
+  when: gluster_infra_lv_logicalvols is defined or
+        gluster_infra_thick_lvs is defined
   tags:
     - fscreate
 
