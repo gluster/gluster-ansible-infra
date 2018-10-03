@@ -3,12 +3,8 @@
   remote_user: root
   gather_facts: no
   hosts: all
-  vars:
-     gluster_infra_reset_mnt_paths:
-       - /mnt/brick0
-       - /mnt/brick1
-     gluster_infra_reset_volume_groups:
-       - vg_vdb
-       - vg_vdc
+  vars_files:
+    - brick_reset_vars.yml
+
   roles:
     - gluster.infra

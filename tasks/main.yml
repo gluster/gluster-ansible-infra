@@ -15,7 +15,7 @@
   tags:
     - backend_setup
 
-- name: Rest backend
+- name: Reset backend
   import_role:
     name: "gluster.infra/roles/backend_reset"
   when: >
