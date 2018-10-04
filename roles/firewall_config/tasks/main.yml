@@ -19,7 +19,7 @@
         immediate: "{{ item.immediate | default('yes') }}"
   with_items: "{{ gluster_infra_fw_ports }}"
   when: gluster_infra_fw_ports is defined
-  register: result
+  notify: Reload firewall
 
 - name: Add/Delete services to firewalld rules
   firewalld:
@@ -30,8 +30,4 @@
         immediate: "{{ gluster_infra_fw_immediate | default('yes') }}"
   with_items: "{{ gluster_infra_fw_services }}"
   when: gluster_infra_fw_services is defined
-  register: servresult
-
-- name: Reload the firewall
-  shell: firewall-cmd --reload
-  when: result.changed or servresult.changed
+  notify: Reload firewall
