@@ -19,6 +19,7 @@
         immediate: "{{ item.immediate | default('yes') }}"
   with_items: "{{ gluster_infra_fw_ports }}"
   when: gluster_infra_fw_ports is defined
+  register: result
 
 - name: Add/Delete services to firewalld rules
   firewalld:
@@ -29,7 +30,8 @@
         immediate: "{{ gluster_infra_fw_immediate | default('yes') }}"
   with_items: "{{ gluster_infra_fw_services }}"
   when: gluster_infra_fw_services is defined
-  # Should we ignore errors?
+  register: servresult
 
 - name: Reload the firewall
   shell: firewall-cmd --reload
+  when: result.changed or servresult.changed

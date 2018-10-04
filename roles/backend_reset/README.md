@@ -1,38 +1,43 @@
-Role Name
+backend_reset
 =========
 
-A brief description of the role goes here.
+This role unmounts the filesystem and deletes specified logical volumes and volume groups.
+
+Note: The mounted filesystems should not be busy. For example, if the GlusterFS volumes are running, then umount fails and logical volumes will not be deleted.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Ansible version 2.5 or above.
+VDO utilities (Optional)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+| Name                     |Required?| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| gluster_infra_reset_mnt_paths | No | | Mount point of the brick which has to be unmounted and logical volumes deleted. |
+| gluster_infra_reset_volume_groups | No | | Name of the volume group which has to be deleted. All corresponding logical volumes and physical volumes will be deleted. |
+| gluster_infra_reset_vdos | No | | Name of the vdo devices that have to be removed |
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Unmount the filesystem and delete the roles
 
     - hosts: gluster_servers
+      vars:
+        - gluster_infra_reset_mnt_path: /mnt/foo
+        - gluster_infra_reset_volume_group: gluster_vg
       roles:
-         - { role: username.rolename, x: 42 }
+         - gluster.infra
 
 License
 -------
 
-BSD
+GPLv3
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Sachidananda Urs <surs@redhat.com>

@@ -1,11 +1,34 @@
 ---
 # Only XFS is supported in GlusterFS
 
+# Create mount directories if not already present
+- name: Create mount directories if not already present
+  file:
+     path: "{{ item.path }}"
+     state: directory
+  with_items: "{{ gluster_infra_mount_devices }}"
+
+# In case of vdo disks, use different mount options
+- name: Set mount options for VDO
+  set_fact:
+     vdo_opts: ",x-systemd.requires=vdo.service"
+  when: gluster_infra_vdo is defined
+
 - name: Mount the devices
   mount:
      path: "{{ item.path }}"
      state: mounted
      fstype: xfs
-     opts: "inode64,noatime,nodiratime"
+     opts: "inode64,noatime,nodiratime{{ vdo_opts|default('')}}"
      src: "/dev/{{item.vgname}}/{{item.lvname}}"
   with_items: "{{ gluster_infra_mount_devices }}"
+
+# In case of VDO configure xfs
+- name: In case of VDO update dynamic config - max_retries
+  shell: >
+     echo '4' > "/sys/fs/xfs/`basename $(realpath /dev/{{item.vgname}}/\
+                 {{item.lvname}})`/error/metadata/ENOSPC/max_retries";
+     echo '4' > "/sys/fs/xfs/`basename $(realpath /dev/{{item.vgname}}/\
+                 {{item.lvname}})`/error/metadata/EIO/max_retries";
+  with_items: "{{ gluster_infra_mount_devices }}"
+  when: gluster_infra_vdo is defined
