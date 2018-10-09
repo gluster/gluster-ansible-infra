@@ -2,4 +2,3 @@
 # handlers file for firewall_config
 - name: Reload firewall
   command: firewall-cmd --reload
-
