@@ -38,7 +38,7 @@ respective sub-roles directory.
 -----------------
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. name and device are the keys, see examples for syntax. |
+| gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. See examples for syntax. |
 | gluster_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
 | gluster_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
 | gluster_infra_volume_groups  || | Mandatory variable, key/value pairs of vgname and pvname. pvname can be comma-separated values if more than a single pv is needed for a vg. See below for syntax. |
@@ -47,7 +47,7 @@ respective sub-roles directory.
 | gluster_infra_thinpools || | Thinpool data. This is a dictionary with keys vgname, thinpoolname, thinpoolsize, and poolmetadatasize. See below for syntax and example. |
 | gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname and lvsize. See below for example. |
 | gluster_infra_thick_lvs || UNDEF | Optional. Needed only if thick volume has to be created. This is a dictionary with vgname, lvname, and size as keys. See below for example |
-| gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lv are the keys. |
+| gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
 | gluster_infra_cache_vars | | UNDEF | This variable contains list of dictionaries for setting up LV cache. Variable has following keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode. The keys are explained in more detail below|
 
 
@@ -57,7 +57,7 @@ If the backend disk has to be configured with VDO the variable gluster_infra_vdo
 
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. name and device are the keys, see examples for syntax. |
+| gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. gluster_infra_vdo supports the keys explained below, see examples for syntax. |
 
 ```
 For Example:
@@ -110,13 +110,13 @@ gluster_infra_volume_groups:
 -----------------------
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname and lvsize. See below for example. |
+| gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname, vgname, thinpool, and lvsize. See below for example. |
 
 ```
 For Example:
 gluster_infra_lv_logicalvols:
-   - { lvname: 'hc_images', lvsize: '500G' }
-   - { lvname: 'hc_data', lvsize: '500G' }
+   - { vgname: 'vg_vdb', thinpool: 'foo_thinpool', lvname: 'vg_vdb_thinlv', lvsize: '500G' }
+   - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
 ```
 
 #### Thick LV variable
@@ -142,7 +142,8 @@ gluster_infra_thick_lvs:
 
 ```
 gluster_infra_thinpools:
-  - {vgname: 'vg_sdb', thinpoolname: 'foo_thinpool', thinpoolsize: '100G', poolmetadatasize: '16G'
+  - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '10G', poolmetadatasize: '1G' }
+  - {vgname: 'vg_vdc', thinpoolname: 'bar_thinpool', thinpoolsize: '20G', poolmetadatasize: '1G' }
 ```
 
 * poolmetadatasize: Metadata size for LV, recommended value 16G is used by default. That value can be overridden by setting the variable. Include the unit [G\|M\|K]
@@ -177,12 +178,12 @@ For example:
 -----------------------------------------
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lv are the keys. |
+| gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
 
 ```
 For example:
 gluster_infra_mount_devices:
-        - { path: '/mnt/thinv', vgname: <vgname>, lv: <lvname> }
+        - { path: '/mnt/thinv', vgname: <vgname>, lvname: <lvname> }
 ```
 
 
@@ -222,33 +223,36 @@ Configure the ports and services related to GlusterFS, create logical volumes an
      gluster_infra_stripe_unit_size: 128
 
      # Variables for creating volume group
-     gluster_infra_vg: glusterfs_vg
+     gluster_infra_volume_groups:
+       - { vgname: 'vg_vdb', pvname: '/dev/vdb' }
+       - { vgname: 'vg_vdc', pvname: '/dev/vdc' }
 
      # Create a thick volume name
      gluster_infra_thick_lvs:
-       - { vgname: 'vg_sdb', lvname: 'thicklv_1', size: '100G' }
-       - { vgname: 'vg_sdc', lvname: 'thicklv_2', size: '500G' }
+       - { vgname: 'vg_vdb', lvname: 'thicklv_1', size: '100G' }
 
      # Create thinpools
      gluster_infra_thinpools:
-       - {vgname: 'vg_sdb', thinpoolname: 'foo_thinpool', thinpoolsize: '100G', poolmetadatasize: '16G'
-       - {vgname: 'vg_sdc', thinpoolname: 'bar_thinpool', thinpoolsize: '500G', poolmetadatasize: '16G'
+       - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '100G', poolmetadatasize: '16G'}
+       - {vgname: 'vg_vdc', thinpoolname: 'bar_thinpool', thinpoolsize: '500G', poolmetadatasize: '16G'}
 
      # Create a thin volume
      gluster_infra_lv_logicalvols:
-        - { lvname: 'hc_images', lvsize: '500G' }
-        - { lvname: 'hc_data', lvsize: '500G' }
-
+       - { vgname: 'vg_vdb', thinpool: 'foo_thinpool', lvname: 'vg_vdb_thinlv', lvsize: '500G' }
+       - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
 
      # Mount the devices
      gluster_infra_mount_devices:
-        - { path: '/mnt/thinv', vgname: 'vg_sdb', lv: 'glusterfs_thinlv' }
-        - { path: '/mnt/thicklv', vgname: 'vg_sdc', lv: 'thicklv_1 }
+       - { path: '/mnt/thicklv', vgname: 'vg_vdb', lvname: 'thicklv_1' }
+       - { path: '/mnt/thinlv1', vgname: 'vg_vdb', lvname: 'vg_vdb_thinlv' }
+       - { path: '/mnt/thinlv2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv' }
 
   roles:
      - gluster.infra
 
 ```
+
+See also: https://github.com/gluster/gluster-ansible-infra/tree/master/playbooks
 
 License
 -------
