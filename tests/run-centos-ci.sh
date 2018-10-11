@@ -2,8 +2,10 @@
 
 # setting up virtual environment
 yum -y install epel-release
-virtualenv --system-site-packaes env
-source env
+pip install virtualenv
+pip install python
+virtualenv --system-site-packages env
+source env/bin/activate
 
 # install dependency packages
 yum install libselinux-python
