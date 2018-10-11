@@ -4,8 +4,7 @@
 yum -y install epel-release
 yum install libselinux-python yum-utils \
   device-mapper-persistent-data \
-  lvm2
-yum install gcc python-virtualenv
+  lvm2 gcc python-virtualenv
 virtualenv --system-site-packages env
 source env/bin/activate
 
