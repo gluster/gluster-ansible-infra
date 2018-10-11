@@ -2,14 +2,12 @@
 
 # setting up virtual environment
 yum -y install epel-release
-pip install virtualenv
-pip install python
+yum install libselinux-python
+yum install gcc python-virtualenv
 virtualenv --system-site-packages env
 source env/bin/activate
 
 # install dependency packages
-yum install libselinux-python
-yum install gcc python-virtualenv
 pip install ansible molecule docker-py
 
 # prerequisites to install docker
