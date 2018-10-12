@@ -21,11 +21,6 @@ yum install docker-ce
 systemctl start docker
 systemctl enable docker
 
-# basic dependencies for the tests
-yum -y install git
-git clone https://github.com/gluster/gluster-ansible-infra.git
-cd gluster-ansible-infra/roles/firewall_config/
-
 # run tests
 molecule init
 molecule test
