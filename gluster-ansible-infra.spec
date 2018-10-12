@@ -2,8 +2,8 @@
 %global docdir %{_datadir}/doc/gluster.infra
 
 Name:      gluster-ansible-infra
-Version:   0.2
-Release:   1%{?dist}
+Version:   0.4
+Release:   1
 Summary:   Ansible roles for GlusterFS infrastructure management
 
 URL:       https://github.com/gluster/gluster-ansible-infra
@@ -29,7 +29,7 @@ cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars \
    %{buildroot}/%{rolesdir}
 
 mkdir -p %{buildroot}/%{docdir}
-cp -dpr README.md examples %{buildroot}/%{docdir}
+cp -dpr README.md %{buildroot}/%{docdir}
 
 %files
 %{rolesdir}
@@ -38,6 +38,13 @@ cp -dpr README.md examples %{buildroot}/%{docdir}
 %license LICENSE
 
 %changelog
+* Fri Oct 12 2018 Sachidananda Urs <sac@redhat.com> 0.4
+- Added tests, and enhanced documentation, fixed fscreate bug
+- Remove xfs runtime specific configuration
+
+* Tue Sep 25 2018 Sachidananda Urs <sac@redhat.com> 0.3
+- Remove the examples directory and add backend_reset role
+
 * Fri Aug 31 2018 Sachidananda Urs <sac@redhat.com> 0.2
 - Backend setup enhancements
 
