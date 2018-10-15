@@ -2,7 +2,7 @@
 
 # setting up virtual environment
 yum -y install epel-release
-yum install libselinux-python yum-utils \
+yum -y install libselinux-python yum-utils \
   device-mapper-persistent-data \
   lvm2 gcc python-virtualenv
 virtualenv --system-site-packages env
@@ -15,7 +15,7 @@ pip install ansible molecule docker-py
 yum-config-manager \
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
-yum install docker-ce
+yum -y install docker-ce
 
 # start and enable Docker service
 systemctl start docker
