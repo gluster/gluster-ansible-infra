@@ -22,3 +22,14 @@
      opts: "inode64,noatime,nodiratime{{ vdo_opts|default('')}}"
      src: "/dev/{{item.vgname}}/{{item.lvname}}"
   with_items: "{{ gluster_infra_mount_devices }}"
+
+- name: Set Gluster specific SeLinux context on the bricks
+  sefcontext:
+     target: "{{ item.path }}"
+     setype: glusterd_brick_t
+     state: present
+  with_items: "{{ gluster_infra_mount_devices }}"
+
+- name: restore file(s) default SELinux security contexts
+  command: restorecon -Rv "{{ item.path }}"
+  with_items: "{{ gluster_infra_mount_devices }}"
