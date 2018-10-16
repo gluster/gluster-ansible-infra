@@ -11,7 +11,7 @@
   import_tasks: vg_create.yml
   when: gluster_infra_volume_groups is defined
   tags:
-     - vgcreate
+    - vgcreate
 
 # If a thick volume is requested for the same vg
 - name: Create a thick logical volume

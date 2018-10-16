@@ -16,14 +16,14 @@
 # variable to override it.
 - name: Set PV data alignment for JBOD
   set_fact:
-     pv_dataalign: "{{ gluster_infra_dalign | default('256K') }}"
+    pv_dataalign: "{{ gluster_infra_dalign | default('256K') }}"
   when: gluster_infra_disktype == 'JBOD'
 
 # Set data alignment for RAID
 # We need KiB: ensure to keep the trailing `K' in the pv_dataalign calculation.
 - name: Set PV data alignment for RAID
   set_fact:
-     pv_dataalign: >
+    pv_dataalign: >
         {{ gluster_infra_diskcount|int *
            gluster_infra_stripe_unit_size|int }}K
   when: >
@@ -32,7 +32,7 @@
 
 - name: Set VG physical extent size for RAID
   set_fact:
-     vg_pesize: >
+    vg_pesize: >
          {{ gluster_infra_diskcount|int *
             gluster_infra_stripe_unit_size|int }}K
   when: >
@@ -43,10 +43,10 @@
 # The devices in `pvs' can be a regular device or a VDO device
 - name: Create volume groups
   lvg:
-     state: present
-     vg: "{{ item.vgname }}"
-     pvs: "{{ item.pvname }}"
-     pv_options: "--dataalignment {{ pv_dataalign }}"
-     # pesize is 4m by default for JBODs
-     pesize: "{{ vg_pesize | default(4) }}"
+    state: present
+    vg: "{{ item.vgname }}"
+    pvs: "{{ item.pvname }}"
+    pv_options: "--dataalignment {{ pv_dataalign }}"
+    # pesize is 4m by default for JBODs
+    pesize: "{{ vg_pesize | default(4) }}"
   with_items: "{{ gluster_infra_volume_groups }}"
