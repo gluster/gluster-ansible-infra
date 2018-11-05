@@ -12,9 +12,12 @@
       - data0
       - data1
   - name: Remove volume groups
-    lvg:
-      vg: "{{item.1}}"
+    lvol:
+      vg: vg_vdb
       state: absent
-    with_items:
-      - vg_vdb
-      - vg_vdc
+    pvs: /dev/loop0
+  - name: Remove thinpool
+    lvol:
+      thinpool: vg_vdc
+      state: absent
+    pvs: /dev/loop1

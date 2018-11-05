@@ -35,7 +35,6 @@
         # Create thinpools
         gluster_infra_thinpools:
           - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '5M', poolmetadatasize: '2M'}
-          - {vgname: 'vg_vdc', thinpoolname: 'bar_thinpool', thinpoolsize: '5M', poolmetadatasize: '2M'}
 
         # Create a thin volume
         gluster_infra_lv_logicalvols:
