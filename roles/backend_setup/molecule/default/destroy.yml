@@ -11,3 +11,10 @@
     with_items:
       - data0
       - data1
+  - name: Remove volume groups
+    lvg:
+      vg: "{{item.1}}"
+      state: absent
+    with_items:
+      - vg_vdb
+      - vg_vdc
