@@ -6,7 +6,7 @@
     command: "losetup -D"
   - name: Remove data files
     file:
-      path: "{{item.1}}"
+      path: "/var/{{item}}"
       state: absent
     with_items:
       - data0
@@ -15,9 +15,15 @@
     lvol:
       vg: vg_vdb
       state: absent
-    pvs: /dev/loop0
+      pvs: /dev/loop0
+      lv: thicklv_1
+      force: true
+    ignore_errors: true
   - name: Remove thinpool
     lvol:
-      thinpool: vg_vdc
+      vg: vg_vdc
       state: absent
-    pvs: /dev/loop1
+      pvs: /dev/loop1
+      thinpool: foo_thinpool
+      force: true
+    ignore_errors: true

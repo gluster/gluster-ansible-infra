@@ -34,14 +34,14 @@
 
         # Create thinpools
         gluster_infra_thinpools:
-          - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '5M', poolmetadatasize: '2M'}
+          - {vgname: 'vg_vdc', thinpoolname: 'foo_thinpool', thinpoolsize: '5M', poolmetadatasize: '2M'}
 
         # Create a thin volume
         gluster_infra_lv_logicalvols:
-          - { vgname: 'vg_vdb', thinpool: 'foo_thinpool', lvname: 'vg_vdb_thinlv', lvsize: '5G' }
-          - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '5G'}
+          - { vgname: 'vg_vdc', thinpool: 'foo_thinpool', lvname: 'vg_vdc_thinlv1', lvsize: '20M'}
+          - { vgname: 'vg_vdc', thinpool: 'foo_thinpool', lvname: 'vg_vdc_thinlv2', lvsize: '20M'}
         # Mount the devices
         gluster_infra_mount_devices:
           - { path: '/mnt/thicklv', vgname: 'vg_vdb', lvname: 'thicklv_1' }
-          - { path: '/mnt/thinlv1', vgname: 'vg_vdb', lvname: 'vg_vdb_thinlv' }
-          - { path: '/mnt/thinlv2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv' }
+          - { path: '/mnt/thinlv1', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv1' }
+          - { path: '/mnt/thinlv2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv2' }
