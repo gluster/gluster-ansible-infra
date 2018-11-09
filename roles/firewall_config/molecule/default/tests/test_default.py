@@ -8,8 +8,6 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 def test_hosts_file(host):
     cmd = host.run("firewall-cmd --list-all")
-    cmd.rc
-    cmd.stderr
     for line in cmd.stdout.split("\n"):
         if "services" in line:
             assert "glusterfs" in line
