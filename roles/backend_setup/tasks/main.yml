@@ -1,6 +1,21 @@
 ---
 # A vdo is created an will be used for setting up bricks instead of physical
 # volumes
+
+# Initialize vdo_devs to empty list, vdo_devs would not not be initialized if
+# search fails
+- name: Initialize vdo_devs array
+  set_fact:
+     vdo_devs: []
+
+# Get the list of volume groups created on vdo disks
+# This is a bit hacky, we rely on pvname to get vdo disks
+- name: Record VDO devices (if any)
+  set_fact:
+     vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
+  with_items: "{{ gluster_infra_volume_groups }}"
+  when: item.pvname is search("/dev/mapper/")
+
 - name: Create a vdo disk
   import_tasks: vdo_create.yml
   when: gluster_infra_vdo is defined

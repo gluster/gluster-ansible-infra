@@ -2,7 +2,7 @@
 %global docdir %{_datadir}/doc/gluster.infra
 
 Name:      gluster-ansible-infra
-Version:   0.4
+Version:   0.5
 Release:   1
 Summary:   Ansible roles for GlusterFS infrastructure management
 
@@ -38,6 +38,9 @@ cp -dpr README.md %{buildroot}/%{docdir}
 %license LICENSE
 
 %changelog
+* Mon Oct 15 2018 Sachidananda Urs <sac@redhat.com> 0.5
+- Add Gluster specific SeLinux label on brick mounts
+
 * Fri Oct 12 2018 Sachidananda Urs <sac@redhat.com> 0.4
 - Added tests, and enhanced documentation, fixed fscreate bug
 - Remove xfs runtime specific configuration
