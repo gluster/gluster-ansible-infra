@@ -11,7 +11,7 @@
 # In case of vdo disks, use different mount options
 - name: Set mount options for VDO
   set_fact:
-     vdo_opts: ",x-systemd.requires=vdo.service"
+     vdo_opts: ",_netdev,x-systemd.device-timeout=0,x-systemd.requires=vdo.service"
   when: gluster_infra_vdo is defined
 
 - name: Mount the vdo devices (If any)
