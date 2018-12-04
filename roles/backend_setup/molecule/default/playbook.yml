@@ -16,7 +16,7 @@
           - glusterfs
 
         # Set a disk type, Options: JBOD, RAID6, RAID10
-        gluster_infra_disktype: RAID6
+        gluster_infra_disktype: JBOD
 
         # RAID6 and RAID10 diskcount (Needed only when disktype is raid)
         gluster_infra_diskcount: 10
