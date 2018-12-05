@@ -4,17 +4,6 @@
   roles:
     - role: backend_setup
       vars:
-        # Firewall setup
-        gluster_infra_fw_ports:
-          - 2049/tcp
-          - 54321/tcp
-          - 5900/tcp
-          - 5900-6923/tcp
-          - 5666/tcp
-          - 16514/tcp
-        gluster_infra_fw_services:
-          - glusterfs
-
         # Set a disk type, Options: JBOD, RAID6, RAID10
         gluster_infra_disktype: JBOD
 
@@ -25,23 +14,42 @@
 
         # Variables for creating volume group
         gluster_infra_volume_groups:
-          - { vgname: 'vg_vdb', pvname: '/dev/loop0' }
-          - { vgname: 'vg_vdc', pvname: '/dev/loop1' }
+          - vgname: vg_vdb
+            pvname: /dev/loop0
+          - vgname: vg_vdc
+            pvname: /dev/loop1
 
         # Create a thick volume name
         gluster_infra_thick_lvs:
-          - { vgname: 'vg_vdb', lvname: 'thicklv_1', size: '10M' }
+          - vgname: vg_vdb
+            lvname: thicklv_1
+            size: 10M
 
         # Create thinpools
         gluster_infra_thinpools:
-          - {vgname: 'vg_vdc', thinpoolname: 'foo_thinpool', thinpoolsize: '5M', poolmetadatasize: '2M'}
+          - vgname: vg_vdc
+            thinpoolname: foo_thinpool
+            thinpoolsize: 5M
+            poolmetadatasize: 2M
 
         # Create a thin volume
         gluster_infra_lv_logicalvols:
-          - { vgname: 'vg_vdc', thinpool: 'foo_thinpool', lvname: 'vg_vdc_thinlv1', lvsize: '20M'}
-          - { vgname: 'vg_vdc', thinpool: 'foo_thinpool', lvname: 'vg_vdc_thinlv2', lvsize: '20M'}
+          - lvname: vg_vdc_thinlv1
+            lvsize: 20M
+            thinpool: foo_thinpool
+            vgname: vg_vdc
+          - lvname: vg_vdc_thinlv2
+            lvsize: 20M
+            thinpool: foo_thinpool
+            vgname: vg_vdc
         # Mount the devices
         gluster_infra_mount_devices:
-          - { path: '/mnt/thicklv', vgname: 'vg_vdb', lvname: 'thicklv_1' }
-          - { path: '/mnt/thinlv1', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv1' }
-          - { path: '/mnt/thinlv2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv2' }
+          - path: /mnt/thicklv
+            vgname: vg_vdb
+            lvname: thicklv_1
+          - path: /mnt/thinlv1
+            vgname: vg_vdc
+            lvname: vg_vdc_thinlv1
+          - path: /mnt/thinlv2
+            vgname: vg_vdc
+            lvname: vg_vdc_thinlv2
