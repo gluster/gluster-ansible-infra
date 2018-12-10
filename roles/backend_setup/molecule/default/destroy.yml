@@ -11,6 +11,14 @@
     with_items:
       - data0
       - data1
+  - name: unmount device
+    mount:
+      path: "/mnt/{{item}}"
+      state: absent
+    with_items:
+      - thicklv
+      - thinlv1
+      - thinlv2
   - name: Remove volume groups
     lvol:
       vg: vg_vdb

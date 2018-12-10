@@ -33,4 +33,4 @@
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('yes') }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
-  when: gluster_infra_thick_lvs is defined\n
+  when: gluster_infra_thick_lvs is defined
