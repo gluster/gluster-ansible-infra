@@ -1,6 +1,9 @@
 ---
 # Create a logical volume thinpool when thinpoolname is given
-
+- name:
+  package:
+    name: thin-provisioning-tools
+    state: present
 # Chunksize is calculated as follows for GlusterFS' optimal performance.
 # RAID6:
 #    full_stripe_size = stripe_unit_size * no_of_data_disks
@@ -25,12 +28,12 @@
 
 - name: Create a LV thinpool
   lvol:
-     state: present
-     vg: "{{ item.vgname }}"
-     thinpool: "{{ item.thinpoolname }}"
-     size: "{{ item.thinpoolsize | default('100%FREE') }}"
-     opts: " --chunksize {{ lv_chunksize }}
-             --poolmetadatasize {{ item.poolmetadatasize }}
-             --zero n"
+    state: present
+    vg: "{{ item.vgname }}"
+    thinpool: "{{ item.thinpoolname }}"
+    size: "{{ item.thinpoolsize | default('100%FREE') }}"
+    opts: " --chunksize {{ lv_chunksize }}
+            --poolmetadatasize {{ item.poolmetadatasize }}
+            --zero n"
   with_items: "{{ gluster_infra_thinpools }}"
   when: gluster_infra_thinpools is defined
