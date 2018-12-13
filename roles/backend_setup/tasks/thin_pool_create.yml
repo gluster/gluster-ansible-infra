@@ -1,6 +1,6 @@
 ---
 # Create a logical volume thinpool when thinpoolname is given
-- name:
+- name: Install required packages to perform operations
   package:
     name: thin-provisioning-tools
     state: present
