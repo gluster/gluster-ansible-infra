@@ -1,4 +1,16 @@
 ---
+- name: Set pyyaml package name
+  set_fact:
+    pyyaml_name: python-yaml
+- name: Overwrite pyyaml package name for non-Debian
+  set_fact:
+    pyyaml_name: PyYAML
+  when: ansible_distribution != "Debian" and ansible_distribution != "Ubuntu"
+- name: Install PyYAML for non-debian
+  package:
+    name: "{{ pyyaml_name }}"
+    state: present
+
 - name: Create VDO with specified size
   vdo:
       name: "{{ item.name }}"
