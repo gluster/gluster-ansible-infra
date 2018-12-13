@@ -26,6 +26,7 @@
 - name: Create a LV thinpool
   lvol:
      state: present
+     shrink: false
      vg: "{{ item.vgname }}"
      thinpool: "{{ item.thinpoolname }}"
      size: "{{ item.thinpoolsize | default('100%FREE') }}"

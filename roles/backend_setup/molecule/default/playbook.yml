@@ -23,23 +23,23 @@
         gluster_infra_thick_lvs:
           - vgname: vg_vdb
             lvname: thicklv_1
-            size: 100M
+            size: 500M
 
         # Create thinpools
         gluster_infra_thinpools:
           - vgname: vg_vdc
             thinpoolname: foo_thinpool
-            thinpoolsize: 30M
-            poolmetadatasize: 20M
+            thinpoolsize: 100M
+            poolmetadatasize: 80M
 
         # Create a thin volume
         gluster_infra_lv_logicalvols:
           - lvname: vg_vdc_thinlv1
-            lvsize: 40M
+            lvsize: 60M
             thinpool: foo_thinpool
             vgname: vg_vdc
           - lvname: vg_vdc_thinlv2
-            lvsize: 40M
+            lvsize: 60M
             thinpool: foo_thinpool
             vgname: vg_vdc
         # Mount the devices
@@ -53,3 +53,5 @@
           - path: /mnt/thinlv2
             vgname: vg_vdc
             lvname: vg_vdc_thinlv2
+        gluster_set_selinux_labels: false
+        gluster_infra_fs_force: false
