@@ -1,36 +1,35 @@
 ---
-- name: Set pyyaml package name
-  set_fact:
-    pyyaml_name: python-yaml
-- name: Overwrite pyyaml package name for non-Debian
-  set_fact:
-    pyyaml_name: PyYAML
-  when: ansible_distribution != "Debian" and ansible_distribution != "Ubuntu"
-- name: Install PyYAML for non-debian
+- name: Install python-yaml package
   package:
-    name: "{{ pyyaml_name }}"
+    name: python-yaml
     state: present
+    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+- name: Install python-yaml package
+  package:
+    name: python2-pyyaml
+    state: present
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
 - name: Create VDO with specified size
   vdo:
-      name: "{{ item.name }}"
-      device: "{{ item.device }}"
-      state: "{{ item.state | default('present') }}"
-      activated: "{{ item.activated | default('yes') }}"
-      running: "{{ item.running | default('yes') }}"
-      logicalsize: "{{ item.logicalsize | default('') }}"
-      compression: "{{ item.compression | default('enabled') }}"
-      blockmapcachesize: "{{ item.blockmapcachesize | default('128M') }}"
-      readcache: "{{ item.readcache | default('disabled') }}"
-      readcachesize: "{{ item.readcachesize | default('0') }}"
-      emulate512: "{{ item.emulate512 | default('off') }}"
-      slabsize: "{{ item.slabsize | default('2G') }}"
-      writepolicy: "{{ item.writepolicy | default('sync') }}"
-      indexmem: "{{ item.indexmem | default('0.25') }}"
-      indexmode: "{{ item.indexmode | default('dense') }}"
-      ackthreads: "{{ item.ackthreads | default('1') }}"
-      biothreads: "{{ item.biothreads | default('4') }}"
-      cputhreads: "{{ item.cputhreads | default('2') }}"
-      logicalthreads: "{{ item.logicalthreads | default('1') }}"
-      physicalthreads: "{{ item.physicalthreads | default('1') }}"
+    name: "{{ item.name }}"
+    device: "{{ item.device }}"
+    state: "{{ item.state | default('present') }}"
+    activated: "{{ item.activated | default('yes') }}"
+    running: "{{ item.running | default('yes') }}"
+    logicalsize: "{{ item.logicalsize | default('') }}"
+    compression: "{{ item.compression | default('enabled') }}"
+    blockmapcachesize: "{{ item.blockmapcachesize | default('128M') }}"
+    readcache: "{{ item.readcache | default('disabled') }}"
+    readcachesize: "{{ item.readcachesize | default('0') }}"
+    emulate512: "{{ item.emulate512 | default('off') }}"
+    slabsize: "{{ item.slabsize | default('2G') }}"
+    writepolicy: "{{ item.writepolicy | default('sync') }}"
+    indexmem: "{{ item.indexmem | default('0.25') }}"
+    indexmode: "{{ item.indexmode | default('dense') }}"
+    ackthreads: "{{ item.ackthreads | default('1') }}"
+    biothreads: "{{ item.biothreads | default('4') }}"
+    cputhreads: "{{ item.cputhreads | default('2') }}"
+    logicalthreads: "{{ item.logicalthreads | default('1') }}"
+    physicalthreads: "{{ item.physicalthreads | default('1') }}"
   with_items: "{{ gluster_infra_vdo }}"
