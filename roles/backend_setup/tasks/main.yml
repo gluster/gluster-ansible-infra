@@ -12,7 +12,12 @@
     name: device-mapper-persistent-data
     state: present
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-
+- name: Install python-yaml package for Debian systems
+  package:
+    name: python-yaml
+    state: present
+    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+    
 # Initialize vdo_devs to empty list, vdo_devs would not not be initialized if
 # search fails
 - name: Initialize vdo_devs array

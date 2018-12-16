@@ -1,15 +1,4 @@
 ---
-- name: Install python-yaml package
-  package:
-    name: python-yaml
-    state: present
-    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
-- name: Install python-yaml package
-  package:
-    name: python2-pyyaml
-    state: present
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-
 - name: Create VDO with specified size
   vdo:
     name: "{{ item.name }}"
