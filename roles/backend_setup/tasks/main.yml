@@ -1,23 +1,23 @@
 ---
-# A vdo is created an will be used for setting up bricks instead of physical
-# volumes
 # Create a logical volume thinpool when thinpoolname is given
-- name: Install lvm tools for setting up backend
+- name: Change to Install lvm tools for debian systems.
   package:
     name: thin-provisioning-tools
     state: present
     when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
-- name: Install lvm tools for setting up backend
+
+- name: Change to Install lvm tools for RHEL systems.
   package:
     name: device-mapper-persistent-data
     state: present
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
 - name: Install python-yaml package for Debian systems
   package:
     name: python-yaml
     state: present
     when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
-    
+
 # Initialize vdo_devs to empty list, vdo_devs would not not be initialized if
 # search fails
 - name: Initialize vdo_devs array
