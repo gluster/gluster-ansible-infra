@@ -1,15 +1,4 @@
 ---
-# Create a logical volume thinpool when thinpoolname is given
-- name: Install lvm tools for setting up backend
-  package:
-    name: thin-provisioning-tools
-    state: present
-    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
-- name: Install lvm tools for setting up backend
-  package:
-    name: device-mapper-persistent-data
-    state: present
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 # Chunksize is calculated as follows for GlusterFS' optimal performance.
 # RAID6:
 #    full_stripe_size = stripe_unit_size * no_of_data_disks
