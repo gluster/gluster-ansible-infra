@@ -53,5 +53,5 @@
           - path: /mnt/thinlv2
             vgname: vg_vdc
             lvname: vg_vdc_thinlv2
-        gluster_set_selinux_labels: false
+        # gluster_set_selinux_labels: false
         gluster_infra_fs_force: false
