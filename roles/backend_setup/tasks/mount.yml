@@ -34,3 +34,4 @@
 - name: restore file(s) default SELinux security contexts
   command: restorecon -Rv "{{ item.path }}"
   with_items: "{{ gluster_infra_mount_devices }}"
+  when: gluster_set_selinux_labels is defined and gluster_set_selinux_labels == "True"

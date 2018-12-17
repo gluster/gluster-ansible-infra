@@ -2,15 +2,6 @@
 - name: Prepare
   hosts: all
   tasks:
-  - name: Clean up loopback devices
-    command: "losetup -D"
-  - name: Remove data files
-    file:
-      path: "/var/{{item}}"
-      state: absent
-    with_items:
-      - data0
-      - data1
   - name: unmount device
     mount:
       path: "/mnt/{{item}}"
@@ -35,3 +26,12 @@
       thinpool: foo_thinpool
       force: true
     ignore_errors: true
+  - name: Clean up loopback devices
+    command: "losetup -D"
+  - name: Remove data files
+    file:
+      path: "/var/{{item}}"
+      state: absent
+    with_items:
+      - data0
+      - data1
