@@ -4,19 +4,19 @@
   package:
     name: thin-provisioning-tools
     state: present
-    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
 
 - name: Change to Install lvm tools for RHEL systems.
   package:
     name: device-mapper-persistent-data
     state: present
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
 - name: Install python-yaml package for Debian systems
   package:
     name: python-yaml
     state: present
-    when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
 
 # Initialize vdo_devs to empty list, vdo_devs would not not be initialized if
 # search fails
