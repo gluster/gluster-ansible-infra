@@ -23,12 +23,13 @@
 
 - name: Create a LV thinpool
   lvol:
-    state: present
-    vg: "{{ item.vgname }}"
-    thinpool: "{{ item.thinpoolname }}"
-    size: "{{ item.thinpoolsize | default('100%FREE') }}"
-    opts: " --chunksize {{ lv_chunksize }}
-            --poolmetadatasize {{ item.poolmetadatasize }}
-            --zero n"
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     thinpool: "{{ item.thinpoolname }}"
+     size: "{{ item.thinpoolsize | default('100%FREE') }}"
+     opts: " --chunksize {{ lv_chunksize }}
+             --poolmetadatasize {{ item.poolmetadatasize }}
+             --zero n"
   with_items: "{{ gluster_infra_thinpools }}"
   when: gluster_infra_thinpools is defined
