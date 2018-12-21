@@ -18,11 +18,7 @@ def test_hosts_file(host):
             assert "/dev/vg_vdc/vg_vdc_thinlv1" in line
             assert "/dev/vg_vdc/vg_vdc_thinlv2" in line
             assert "/dev/vg_vdb/thicklv_1" in line
-            assert "/dev/centos/swap" in line
-            assert "/dev/centos/root" in line
         if "LV Name" in line:
-            assert "swap" in line
-            assert "root" in line
             assert "foo_thinpool" in line
             assert "vg_vdc_thinlv1" in line
             assert "vg_vdc_thinlv2" in line
