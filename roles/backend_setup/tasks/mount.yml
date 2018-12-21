@@ -11,10 +11,10 @@
 # In case of vdo disks, use different mount options
 - name: Set mount options for VDO
   set_fact:
-     vdo_opts: ",x-systemd.requires=vdo.service"
+     vdo_opts: ",_netdev,x-systemd.device-timeout=0,x-systemd.requires=vdo.service"
   when: gluster_infra_vdo is defined
 
-- name: Mount the devices
+- name: Mount the vdo devices (If any)
   mount:
      path: "{{ item.path }}"
      state: mounted
@@ -22,6 +22,17 @@
      opts: "inode64,noatime,nodiratime{{ vdo_opts|default('')}}"
      src: "/dev/{{item.vgname}}/{{item.lvname}}"
   with_items: "{{ gluster_infra_mount_devices }}"
+  when: vdo_devs|length > 0 and item.vgname in vdo_devs
+
+- name: Mount the devices
+  mount:
+     path: "{{ item.path }}"
+     state: mounted
+     fstype: xfs
+     opts: "inode64,noatime,nodiratime"
+     src: "/dev/{{item.vgname}}/{{item.lvname}}"
+  with_items: "{{ gluster_infra_mount_devices }}"
+  when: item.vgname not in vdo_devs
 
 - name: Set Gluster specific SeLinux context on the bricks
   sefcontext:

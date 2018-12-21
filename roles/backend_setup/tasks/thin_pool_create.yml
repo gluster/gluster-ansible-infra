@@ -1,6 +1,4 @@
 ---
-# Create a logical volume thinpool when thinpoolname is given
-
 # Chunksize is calculated as follows for GlusterFS' optimal performance.
 # RAID6:
 #    full_stripe_size = stripe_unit_size * no_of_data_disks
