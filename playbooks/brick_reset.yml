@@ -1,7 +1,7 @@
 ---
 - name: Reset the bricks
   remote_user: root
-  gather_facts: no
+  gather_facts: true
   hosts: all
   vars_files:
     - brick_reset_vars.yml

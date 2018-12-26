@@ -11,6 +11,8 @@ The  gluster.infra role allows the user to deploy a GlusterFS cluster. It has su
    Create xfs filesystem
    Mount the filesystem
 
+NOTE: Ensure to use gather_facts: true in the playbook since we now added support for Debian/Ubuntu systems.
+
 Requirements
 ------------
 
@@ -200,7 +202,7 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 - name: Setting up backend
   remote_user: root
   hosts: gluster_servers
-  gather_facts: false
+  gather_facts: true
 
   vars:
      # Firewall setup
