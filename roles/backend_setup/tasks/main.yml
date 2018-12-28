@@ -1,4 +1,12 @@
 ---
+# Gather facts to determine the distribution
+- name: Gather facts to determine the OS distribution
+  setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - distribution
+
 # Create a logical volume thinpool when thinpoolname is given
 - name: Change to Install lvm tools for debian systems.
   package:
@@ -10,7 +18,7 @@
   package:
     name: device-mapper-persistent-data
     state: present
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_os_family == 'RedHat'
 
 - name: Install python-yaml package for Debian systems
   package:
