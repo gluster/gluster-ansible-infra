@@ -25,3 +25,7 @@ systemctl enable docker
 cd gluster-ansible-infra/roles/firewall_config/  
 molecule create
 molecule test
+
+cd gluster-ansible-infra/roles/backend_setup/
+molecule create
+molecule test
