@@ -22,7 +22,7 @@
      fstype: xfs
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
-     force: "{{ gluster_infra_fs_force | default('yes') }}"
+     force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ gluster_infra_lv_logicalvols }}"
   when: gluster_infra_lv_logicalvols is defined
 
@@ -31,6 +31,6 @@
      fstype: xfs
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
-     force: "{{ gluster_infra_fs_force | default('yes') }}"
+     force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
   when: gluster_infra_thick_lvs is defined
