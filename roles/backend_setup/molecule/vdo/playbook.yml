@@ -12,30 +12,23 @@
         gluster_infra_vdo:
           - name: hc_vdo_1
             device: /dev/loop0
-          - name: hc_vdo_2
-            device: /dev/loop1
+            slabsize: 128M
         gluster_infra_volume_groups:
           - vgname: vg_vdb
             pvname: /dev/mapper/hc_vdo_1
-          - vgname: vg_vdc
-            pvname: /dev/mapper/hc_vdo_2
         gluster_infra_thick_lvs:
           - vgname: vg_vdb
             lvname: vg_vdb_thicklv1
-            size: 500M
+            size: 1G
         gluster_infra_thinpools:
           - vgname: vg_vdb
             thinpoolname: foo_thinpool
-            thinpoolsize: 400G
-            poolmetadatasize: 200G
+            thinpoolsize: 400M
+            poolmetadatasize: 200M
         gluster_infra_lv_logicalvols:
           - vgname: vg_vdb
             thinpool: foo_thinpool
             lvname: vg_vdb_thinlv
-            lvsize: 500M
-          - vgname: vg_vdc
-            thinpool: bar_thinpool
-            lvname: vg_vdc_thinlv
             lvsize: 500M
         gluster_infra_mount_devices:
           - path: /mnt/thicklv
@@ -44,6 +37,3 @@
           - path: /mnt/thinlv1
             vgname: vg_vdb
             lvname: vg_vdb_thinlv
-          - path: /mnt/thinlv2
-            vgname: vg_vdc
-            lvname: vg_vdc_thinlv
