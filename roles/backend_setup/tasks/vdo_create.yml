@@ -1,4 +1,11 @@
 ---
+# Start the vdo service
+- name: Enable and start vdo service
+  service:
+    name: vdo
+    state: started
+    enabled: yes
+
 - name: Create VDO with specified size
   vdo:
     name: "{{ item.name }}"
