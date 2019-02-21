@@ -1,13 +1,14 @@
 %global rolesdir %{_sysconfdir}/ansible/roles/gluster.infra
 %global docdir %{_datadir}/doc/gluster.infra
+%global buildnum 1
 
 Name:      gluster-ansible-infra
-Version:   0.5
-Release:   1
+Version:   1.0.0
+Release:   1%{?dist}
 Summary:   Ansible roles for GlusterFS infrastructure management
 
 URL:       https://github.com/gluster/gluster-ansible-infra
-Source0:   %{url}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:   %{url}/archive/v%{version}.tar.gz#/%{name}-%{version}-%{buildnum}.tar.gz
 License:   GPLv3
 BuildArch: noarch
 
@@ -19,7 +20,7 @@ The infra role enables user to configure firewall, setup backend disks, reset
 backend disks.
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -p1
 
 %build
 
@@ -29,7 +30,7 @@ cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars \
    %{buildroot}/%{rolesdir}
 
 mkdir -p %{buildroot}/%{docdir}
-cp -dpr README.md %{buildroot}/%{docdir}
+cp -dpr playbooks README.md %{buildroot}/%{docdir}
 
 %files
 %{rolesdir}
@@ -38,6 +39,12 @@ cp -dpr README.md %{buildroot}/%{docdir}
 %license LICENSE
 
 %changelog
+* Wed Feb 20 2019 Sachidananda Urs <sac@redhat.com> 1.0.0-1
+- Bump the version numer to 1
+
+* Thu Jan 03 2019 Sachidananda Urs <sac@redhat.com> 0.6
+- Add example and molecule tests
+
 * Mon Oct 15 2018 Sachidananda Urs <sac@redhat.com> 0.5
 - Add Gluster specific SeLinux label on brick mounts
 
