@@ -6,14 +6,15 @@
 # Where full_stripe_size should be between 1 MiB and 2 MiB. And chunksize is set
 # to full_stripe_size
 #
-- name: Calculate chunksize for RAID6/RAID10
+- name: Calculate chunksize for RAID6/RAID10/RAID5
   set_fact:
      lv_chunksize: >
         {{ gluster_infra_stripe_unit_size|int *
            gluster_infra_diskcount|int }}K
   when: >
      gluster_infra_disktype == 'RAID6' or
-     gluster_infra_disktype == 'RAID10'
+     gluster_infra_disktype == 'RAID10' or
+     gluster_infra_disktype == 'RAID5'
 
 # For JBOD the thin pool chunk size is set to 256 KiB.
 - name: Set chunksize for JBOD
