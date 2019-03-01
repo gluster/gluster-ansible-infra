@@ -13,7 +13,8 @@
              su={{ gluster_infra_stripe_unit_size }}k "
   when: >
       gluster_infra_disktype == 'RAID6' or
-      gluster_infra_disktype == 'RAID10'
+      gluster_infra_disktype == 'RAID10' or
+      gluster_infra_disktype == 'RAID5'
 
 
 # We support only XFS. Filesysem options sw, su are specific to XFS

@@ -7,8 +7,8 @@
 
 - name: Check if valid disktype is provided
   fail:
-    msg: "Unknown disktype. Allowed disktypes: JBOD, RAID6, RAID10."
-  when: gluster_infra_disktype not in [ 'JBOD', 'RAID6', 'RAID10' ]
+    msg: "Unknown disktype. Allowed disktypes: JBOD, RAID6, RAID10, RAID5."
+  when: gluster_infra_disktype not in [ 'JBOD', 'RAID6', 'RAID10', 'RAID5' ]
 
 
 # Set data alignment for JBODs, by default it is 256K. This set_fact is not
@@ -28,7 +28,8 @@
            gluster_infra_stripe_unit_size|int }}K
   when: >
       gluster_infra_disktype == 'RAID6' or
-      gluster_infra_disktype == 'RAID10'
+      gluster_infra_disktype == 'RAID10' or
+      gluster_infra_disktype == 'RAID5'
 
 - name: Set VG physical extent size for RAID
   set_fact:
@@ -37,7 +38,8 @@
             gluster_infra_stripe_unit_size|int }}K
   when: >
      gluster_infra_disktype == 'RAID6' or
-     gluster_infra_disktype == 'RAID10'
+     gluster_infra_disktype == 'RAID10' or
+     gluster_infra_disktype == 'RAID5'
 
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
