@@ -1,5 +1,4 @@
 %global rolesdir %{_sysconfdir}/ansible/roles/gluster.infra
-%global docdir %{_datadir}/doc/gluster.infra
 %global buildnum 1
 
 Name:      gluster-ansible-infra
@@ -26,15 +25,11 @@ backend disks.
 
 %install
 mkdir -p %{buildroot}/%{rolesdir}
-cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars \
+cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars playbooks README.md\
    %{buildroot}/%{rolesdir}
-
-mkdir -p %{buildroot}/%{docdir}
-cp -dpr playbooks README.md %{buildroot}/%{docdir}
 
 %files
 %{rolesdir}
-%doc %{docdir}
 
 %license LICENSE
 
