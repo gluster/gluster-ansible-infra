@@ -14,14 +14,29 @@
      vdo_opts: ",_netdev,x-systemd.device-timeout=0,x-systemd.requires=vdo.service"
   when: gluster_infra_vdo is defined
 
+# Get the UUID of the disks to be mounted
+- name: Get the UUID of the devices
+  shell: blkid /dev/{{item.vgname}}/{{item.lvname}} |
+             awk '{ print $2 }' | sed 's/"//g'
+  register: dev_uuid
+  with_items: "{{ gluster_infra_mount_devices }}"
+
+# Build a new list of dictionaries of devices, including their UUID
+- name: Add UUID into the list of mount devices
+  set_fact:
+     mount_devices_with_uuid: "{{ mount_devices_with_uuid|default([]) +
+                                  [item.item|combine({'uuid':item.stdout})] }}"
+  loop: "{{ dev_uuid.results }}"
+  no_log: true
+
 - name: Mount the vdo devices (If any)
   mount:
      path: "{{ item.path }}"
      state: mounted
      fstype: xfs
      opts: "inode64,noatime,nodiratime{{ vdo_opts|default('')}}"
-     src: "/dev/{{item.vgname}}/{{item.lvname}}"
-  with_items: "{{ gluster_infra_mount_devices }}"
+     src: "{{ item.uuid }}"
+  with_items: "{{ mount_devices_with_uuid }}"
   when: vdo_devs|length > 0 and item.vgname in vdo_devs
 
 - name: Mount the devices
@@ -30,8 +45,8 @@
      state: mounted
      fstype: xfs
      opts: "inode64,noatime,nodiratime"
-     src: "/dev/{{item.vgname}}/{{item.lvname}}"
-  with_items: "{{ gluster_infra_mount_devices }}"
+     src: "{{ item.uuid }}"
+  with_items: "{{ mount_devices_with_uuid }}"
   when: item.vgname not in vdo_devs
 
 - name: Set Gluster specific SeLinux context on the bricks
