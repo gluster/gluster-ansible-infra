@@ -227,10 +227,6 @@ Configure the ports and services related to GlusterFS, create logical volumes an
        - { vgname: 'vg_vdb', pvname: '/dev/vdb' }
        - { vgname: 'vg_vdc', pvname: '/dev/vdc' }
 
-     # Create a thick volume name
-     gluster_infra_thick_lvs:
-       - { vgname: 'vg_vdb', lvname: 'thicklv_1', size: '100G' }
-
      # Create thinpools
      gluster_infra_thinpools:
        - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '100G', poolmetadatasize: '16G'}
@@ -243,9 +239,8 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 
      # Mount the devices
      gluster_infra_mount_devices:
-       - { path: '/mnt/thicklv', vgname: 'vg_vdb', lvname: 'thicklv_1' }
-       - { path: '/mnt/thinlv1', vgname: 'vg_vdb', lvname: 'vg_vdb_thinlv' }
-       - { path: '/mnt/thinlv2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv' }
+       - { path: '/mnt/brick1', vgname: 'vg_vdb', lvname: 'vg_vdb_thinlv' }
+       - { path: '/mnt/brick2', vgname: 'vg_vdc', lvname: 'vg_vdc_thinlv' }
 
   roles:
      - gluster.infra
