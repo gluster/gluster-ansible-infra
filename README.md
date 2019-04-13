@@ -4,19 +4,19 @@ gluster.infra
 The  gluster.infra role allows the user to deploy a GlusterFS cluster. It has sub-roles which can be invoked by setting the variables. The sub-roles are
 
 1. firewall_config:
-   Set up firewall rules (open ports, add services to zone)
+   * Set up firewall rules (open ports, add services to zone)
 2. backend_setup:
-   Create VDO volume (If vdo is selected)
-   Create volume groups, logical volumes (thinpool, thin lv, thick lv)
-   Create xfs filesystem
-   Mount the filesystem
+   * Create VDO volume (If vdo is selected)
+   * Create volume groups, logical volumes (thinpool, thin lv, thick lv)
+   * Create xfs filesystem
+   * Mount the filesystem
 
 Requirements
 ------------
 
-Ansible version 2.5 or above
-GlusterFS version 3.2 or above
-VDO utilities (Optional)
+* Ansible version 2.5 or above
+* GlusterFS version 3.2 or above
+* VDO utilities (Optional)
 
 Role Variables
 --------------
@@ -24,18 +24,20 @@ Role Variables
 These are the superset of role variables. They are explained again in the
 respective sub-roles directory.
 
-### firewall_config
 -------------------
+### firewall_config
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_fw_state | enabled / disabled / present / absent    | UNDEF   | Enable or disable a setting. For ports: Should this port accept(enabled) or reject(disabled) connections. The states "present" and "absent" can only be used in zone level operations (i.e. when no other parameters but zone and state are set). |
 | gluster_infra_fw_ports |    | UNDEF    | A list of ports in the format PORT/PROTO. For example 111/tcp. This is a list value.  |
-| gluster_infra_fw_permanent  | true/false  | true | Whether to make the rule permanenet. |
+| gluster_infra_fw_permanent  | true/false  | true | Whether to make the rule permanent. |
 | gluster_infra_fw_zone    | work / drop / internal / external / trusted / home / dmz / public / block | public   | The firewalld zone to add/remove to/from |
 | gluster_infra_fw_services |    | UNDEF | Name of a service to add/remove to/from firewalld - service must be listed in output of firewall-cmd --get-services. This is a list variable
 
-### backend_setup
 -----------------
+### backend_setup
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. See examples for syntax. |
@@ -50,9 +52,9 @@ respective sub-roles directory.
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
 | gluster_infra_cache_vars | | UNDEF | This variable contains list of dictionaries for setting up LV cache. Variable has following keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode. The keys are explained in more detail below|
 
-
+-----------------
 #### VDO Variable
-------------
+
 If the backend disk has to be configured with VDO the variable gluster_infra_vdo has to be defined.
 
 | Name                     |Choices| Default value         | Comments                          |
@@ -90,9 +92,9 @@ The gluster_infra_vdo variable supports the following keys:
 | logicalthreads | '1' | Specifies the number of threads across which to subdivide parts of the VDO processing based on logical block addresses. Valid values are integer values from 1 to 100 (lower numbers are preferable due to overhead). The default is 1.|
 | physicalthreads | '1' | Specifies the number of threads across which to subdivide parts of the VDO processing based on physical block addresses. Valid values are integer values from 1 to 16 (lower numbers are preferable due to overhead). The physical space used by the VDO volume must be larger than (slabsize * physicalthreads). The default is 1. |
 
-
+-----------------
 #### Volume Groups variable
-------------------------
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_volume_groups || UNDEF | This is a list of hash/dictionary variables, with keys, vgname and pvname. See below for example. |
@@ -105,9 +107,9 @@ gluster_infra_volume_groups:
    - { vgname: 'volgroup3', pvname: '/dev/sdc,/dev/sdd'
 ```
 
-
-#### Logical Volume variable
 -----------------------
+#### Logical Volume variable
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_lv_logicalvols || UNDEF | This is a list of hash/dictionary variables, with keys, lvname, vgname, thinpool, and lvsize. See below for example. |
@@ -119,8 +121,9 @@ gluster_infra_lv_logicalvols:
    - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
 ```
 
-#### Thick LV variable
 -----------------------
+#### Thick LV variable
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_thick_lvs || UNDEF | This is a list of hash/dictionary variables, with keys, vgname, lvname, and size. See below for example. |
@@ -133,8 +136,9 @@ gluster_infra_thick_lvs:
    - { vgname: 'vg_sdc', lvname: 'thick_lv_2', size: '100G' }
 ```
 
-#### Thinpool variable
 ----------------------
+#### Thinpool variable
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_thinpools || UNDEF | This is a list of hash/dictionary variables, with keys: vgname, thinpoolname, thinpoolsize, and poolmetadatasize. See below for example. |
@@ -151,8 +155,9 @@ gluster_infra_thinpools:
 * vgname: Name of the volume group this thinpool should belong to.
 
 
-#### Variables for setting up cache
 -----------------------------------------
+#### Variables for setting up cache
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_cache_vars | | UNDEF | This is a dictionary with keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode |
@@ -173,9 +178,9 @@ For example:
    - { vgname: 'vg_vdb', cachedisk: '/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
 ```
 
-
-#### Variables for mounting the filesystem
 -----------------------------------------
+#### Variables for mounting the filesystem
+
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
@@ -186,7 +191,7 @@ gluster_infra_mount_devices:
         - { path: '/mnt/thinv', vgname: <vgname>, lvname: <lvname> }
 ```
 
-
+-----------------------------------------
 
 
 Example Playbook
@@ -249,7 +254,8 @@ Configure the ports and services related to GlusterFS, create logical volumes an
 
 See also: https://github.com/gluster/gluster-ansible-infra/tree/master/playbooks
 
-License
 -------
+License
+
 
 GPLv3
