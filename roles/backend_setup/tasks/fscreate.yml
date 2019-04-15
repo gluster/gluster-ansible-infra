@@ -25,7 +25,7 @@
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ gluster_infra_lv_logicalvols }}"
-  when: gluster_infra_lv_logicalvols is defined
+  when: gluster_infra_lv_logicalvols is defined and (item.skipfs is not defined or not item.skipfs)
 
 - name: Create filesystem on thick logical vols
   filesystem:
@@ -34,4 +34,4 @@
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
-  when: gluster_infra_thick_lvs is defined
+  when: gluster_infra_thick_lvs is defined and (item.skipfs is not defined or not item.skipfs)
