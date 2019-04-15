@@ -28,4 +28,5 @@
     cputhreads: "{{ item.cputhreads | default('2') }}"
     logicalthreads: "{{ item.logicalthreads | default('1') }}"
     physicalthreads: "{{ item.physicalthreads | default('1') }}"
+  when: item.device is defined
   with_items: "{{ gluster_infra_vdo }}"

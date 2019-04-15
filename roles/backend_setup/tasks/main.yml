@@ -37,7 +37,7 @@
 - name: Record VDO devices (if any)
   set_fact:
      vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
-  with_items: "{{ gluster_infra_volume_groups }}"
+  with_items: "{{ gluster_infra_volume_groups | default([]) }}"
   when: item.pvname is search("/dev/mapper/")
 
 - name: Create a vdo disk
