@@ -33,4 +33,4 @@
              --poolmetadatasize {{ item.poolmetadatasize }}
              --zero n"
   with_items: "{{ gluster_infra_thinpools }}"
-  when: gluster_infra_thinpools is defined
+  when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined 

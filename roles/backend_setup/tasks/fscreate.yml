@@ -24,7 +24,7 @@
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
-  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  with_items: "{{ (gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols) or [] }}"
   when: gluster_infra_lv_logicalvols is defined and (item.skipfs is not defined or not item.skipfs)
 
 - name: Create filesystem on thick logical vols
@@ -33,5 +33,5 @@
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
-  with_items: "{{ gluster_infra_thick_lvs }}"
+  with_items: "{{ (gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs) or [] }}"
   when: gluster_infra_thick_lvs is defined and (item.skipfs is not defined or not item.skipfs)

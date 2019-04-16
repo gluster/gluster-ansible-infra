@@ -10,3 +10,4 @@
      thinpool: "{{ item.thinpool }}"
      size: "{{ item.lvsize }}"
   with_items: "{{ gluster_infra_lv_logicalvols }}"
+  when:  gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none
