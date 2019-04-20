@@ -2,6 +2,95 @@
 # Create a thin logical volume. A thinpool should already have been created by
 # now. There can be more than one thinvolume on a thinpool
 
+- name: Check if block devices exists
+  shell: >
+   {%if (item.pvs is defined) %}
+   {% for pvsname in item.pvs.split(",")  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+   {% else %}
+   echo "1"
+   {% endif %}
+  register: lvt_device_exists
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+
+# - debug:
+#    var: lvt_device_exists
+
+# - debug:
+#    var: gluster_infra_lv_logicalvols
+
+- name: Check if thinlv exists
+  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.lvname}}| sed 's/^ *//;s/$//'"    
+  register: thinlv_attrs
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none
+   and (item.opts is defined and "raid" in item.opts)
+   and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+
+# - debug:
+#    var:  thinlv_attrs
+
+    
+
+- name: Create a LV thinlv-data
+  lvol:
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     lv: "{{ item.lvname }}"
+     pvs: "{{ item.pvs | default() }}"     
+     size: "{{ item.lvsize | default('100%FREE') }}"
+     opts: " 
+             {{ item.opts | default('') }} "
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none
+   and (item.opts is defined and "raid" in item.opts)
+   and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+   and  (thinlv_attrs.results[index].stdout is not defined or thinlv_attrs.results[index].stdout.find("V") != 0)
+
+- name: Create a LV thinlv-meta
+  lvol:
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     lv: "{{ item.lvname }}_meta"
+     pvs: "{{ item.pvs | default() }}"
+     size: "{{ item.meta_size | default('4G') }}"
+     opts: " 
+             {{ item.opts | default('') }} "
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none   
+   and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+   and (thinlv_attrs.results[index].stdout is not defined or thinlv_attrs.results[index].stdout.find("V") != 0)
+   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined)
+
+
+
+- name: Convert logical volume to a thin-lv
+  shell: >
+   lvconvert -y --type thin {{item.vgname}}/{{item.lvname}}
+   --thinpool {{item.vgname}}/{{item.thinpool}}
+   --poolmetadata {{ item.lvname }}_meta
+   --zero n
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none   
+   and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+   and  (thinlv_attrs.results[index].stdout is not defined or thinlv_attrs.results[index].stdout.find("V") != 0)
+   and ((item.opts is defined and "raid" in item.opts) and item.meta_pvs is not defined)
+
 - name: Create thin logical volume
   lvol:
      state: present
@@ -9,5 +98,18 @@
      lv: "{{ item.lvname }}"
      thinpool: "{{ item.thinpool }}"
      size: "{{ item.lvsize }}"
+     pvs: "{{ item.pvs | default() }}"
+     opts: >
+      {% if (item.meta_pvs is defined) %}
+      --poolmetadata {{ item.lvname }}_meta
+      {% endif %}
+      {{ item.opts | default() }}      
   with_items: "{{ gluster_infra_lv_logicalvols }}"
-  when:  gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none
+  loop_control:
+   index_var: index
+  when: >
+   gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none   
+   and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+   and ((item.opts is not defined or "raid" not in item.opts) or item.meta_pvs is defined)
+
+- meta: end_play    
