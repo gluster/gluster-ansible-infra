@@ -16,6 +16,18 @@
       gluster_infra_disktype == 'RAID10' or
       gluster_infra_disktype == 'RAID5'
 
+- name: Check if thin block devices exists
+  shell: >
+   {%if (item.pvs is defined) %}
+   {% for pvsname in item.pvs.split(",")  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+   {% else %}
+   echo "1"
+   {% endif %}
+  register: lvt_device_exists
+  with_items: "{{ gluster_infra_lv_logicalvols }}"
+  when: item is not none
 
 # We support only XFS. Filesysem options sw, su are specific to XFS
 - name: Create filesystem on thin logical vols
@@ -25,7 +37,25 @@
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ (gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols) or [] }}"
-  when: gluster_infra_lv_logicalvols is defined and (item.skipfs is not defined or not item.skipfs)
+  loop_control:
+   index_var: index
+  when: >
+    gluster_infra_lv_logicalvols is defined and (item.skipfs is not defined or not item.skipfs)
+    and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
+
+
+- name: Check if thick block devices exists
+  shell: >
+   {%if (item.pvs is defined) %}
+   {% for pvsname in item.pvs.split(",")  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+   {% else %}
+   echo "1"
+   {% endif %}
+  register: lv_device_exists
+  with_items: "{{ gluster_infra_thick_lvs }}"  
+  when: item is not none
 
 - name: Create filesystem on thick logical vols
   filesystem:
@@ -34,4 +64,8 @@
      opts: "{{ fs_options }} {{ raid_options | default('') }}"
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ (gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs) or [] }}"
-  when: gluster_infra_thick_lvs is defined and (item.skipfs is not defined or not item.skipfs)
+  loop_control:
+   index_var: index
+  when: >
+    gluster_infra_thick_lvs is defined and (item.skipfs is not defined or not item.skipfs)
+    and lv_device_exists.results[index].stdout_lines is defined and "0" not in lv_device_exists.results[index].stdout_lines

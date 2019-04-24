@@ -22,15 +22,140 @@
      lv_chunksize: '256K'
   when: gluster_infra_disktype == 'JBOD'
 
+- name: Check if thin-pool block devices exists
+  shell: >
+   {%if (item.pvs is defined) %}
+   {% for pvsname in item.pvs.split(",")  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+   {% else %}
+   echo "1"
+   {% endif %}
+  register: lvtp_device_exists
+  with_items: "{{ gluster_infra_thinpools }}"
+  when: item is not none
+
+- name: Record for missing devices for phase 2
+  set_fact:
+   gluster_phase2_has_missing_devices: true
+  loop: "{{ lvtp_device_exists.results }}"
+  when: item.stdout_lines is defined and "0" in item.stdout_lines  
+
+- name: Check if thinpool exists
+  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.thinpoolname}}| sed 's/^ *//;s/$//'"    
+  register: thinpool_attrs
+  with_items: "{{ gluster_infra_thinpools }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
+
+# - debug:
+#    var:  thinpool_attrs  
+
+# https://github.com/ansible/ansible/issues/13262
+# block of tasks, which is executed when there are valid pools and pool items are configured.
+# also it checks if the pool doesn't already exists
+- name: Create a LV thinpool-data
+  lvol:
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     lv: "{{ item.thinpoolname }}"
+     pvs: "{{ item.pvs | default() }}"     
+     size: "{{ item.thinpoolsize | default('100%FREE') }}"
+     opts: " 
+             {{ item.opts | default('') }} "
+  with_items: "{{ gluster_infra_thinpools }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
+   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
+
+- name: Make sure meta pv's exists in volume group
+  lvg:
+     state: present
+     vg: "{{ item.vgname }}"
+     pvs: "{{ item.meta_pvs }}"
+     pv_options: "--dataalignment 256K"
+  with_items: "{{ gluster_infra_thinpools }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
+   and item.meta_pvs is defined
+
+- name: Create a LV thinpool-meta
+  lvol:
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     lv: "{{ item.thinpoolname }}_meta"
+     pvs: "{{ ((item.meta_pvs is defined and item.meta_pvs) or item.pvs) | default() }}"     
+     size: "{{ item.poolmetadatasize | default('4G') }}"
+     opts: " 
+             {{ ((item.meta_opts is defined and item.meta_opts) or item.opts) | default('') }} "
+  with_items: "{{ gluster_infra_thinpools }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
+   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
+
+
+
+# - meta: end_play   
+
+
+- name: Convert logical volume to a thin-pool
+  shell: >
+   lvconvert -y --type thin-pool {{item.vgname}}/{{item.thinpoolname}}
+   --poolmetadata {{ item.thinpoolname }}_meta
+   --chunksize {{ lv_chunksize }} 
+   --zero n
+  with_items: "{{ gluster_infra_thinpools }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
+   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
+
+
 - name: Create a LV thinpool
   lvol:
      state: present
      shrink: false
      vg: "{{ item.vgname }}"
+     pvs: "{{ item.pvs | default() }}"
      thinpool: "{{ item.thinpoolname }}"
      size: "{{ item.thinpoolsize | default('100%FREE') }}"
      opts: " --chunksize {{ lv_chunksize }}
              --poolmetadatasize {{ item.poolmetadatasize }}
-             --zero n"
+             --zero n
+             {{ item.opts | default('') }} "
   with_items: "{{ gluster_infra_thinpools }}"
-  when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined 
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
+   and ((item.opts is not defined or "raid" not in item.opts) and item.meta_pvs is not defined and item.meta_opts is not defined)
+#end-block
+# - meta: end_play   

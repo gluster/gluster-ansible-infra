@@ -38,8 +38,10 @@
   set_fact:
      vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
   with_items: "{{ gluster_infra_volume_groups | default([]) }}"
-  when: item.pvname is search("/dev/mapper/")
+  when: item.pvname is defined and item.pvname is search("/dev/mapper/")
 
+
+#phase #1
 - name: Create a vdo disk
   import_tasks: vdo_create.yml
   when: gluster_infra_vdo is defined
@@ -48,6 +50,17 @@
 
 - name: "Execute phase #1 of LVM"
   import_tasks: main-lvm.yml
+
+#phase #2
+- name: "Create a vdo disk after LVM for phase #2"
+  import_tasks: vdo_create.yml
+  when: gluster_infra_vdo is defined and gluster_phase2_has_missing_devices is defined and gluster_phase2_has_missing_devices
+  tags:
+    - vdocreate
+
+- name: "Execute phase #2 of LVM"
+  import_tasks: main-lvm.yml
+  when: gluster_phase2_has_missing_devices is defined and gluster_phase2_has_missing_devices
 
 
 # Create a filesystem on the disks.

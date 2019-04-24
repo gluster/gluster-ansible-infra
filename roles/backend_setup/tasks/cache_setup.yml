@@ -37,11 +37,12 @@
   register: datapoolcache_attrs
   with_items: "{{ gluster_infra_cache_vars }}"  
 
-- debug: 
-   var: gluster_infra_cache_vars
+# - debug:
+#    var: datapool_attrs
 
-- debug: 
-   var: datapool_attrs
+# - debug:
+#    var: item
+#   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip((datapool_attrs is not none and datapool_attrs.results) or []) | list }}"
 
 - name: Change attributes of LV
   lvol:
@@ -50,30 +51,44 @@
      thinpool: "{{ item.0.cachethinpoolname }}"
      opts: " --zero n "
   #loop: "{{ gluster_infra_cache_vars|default([]) | zip(datapool_attrs.results|default([])) | list }}"
-  loop: "{{ (gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([]) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout is defined and item.1.stdout|length>0
-
-
 
 - name: Create LV for cache
   lvol:
      state: present
+     shrink: false
      vg: "{{ item.0.vgname }}"
      lv: "{{ item.0.cachelvname }}"
      size: "{{ item.0.cachelvsize }}"
+     pvs: "{{ item.0.cachedisk | default('') }}"
+     opts: "{{ item.0.opts | default('') }}"
   #Operation not permitted on hidden LV ans_vg/cache-ans_thinpool2.
   #Sorry, no shrinking of cache-ans_thinpool3 without force=yes.
   when: item.1.stdout.find('C') != 0
-  loop: "{{ (gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([]) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
+
+- name: Make sure meta pv's exists in volume group
+  lvg:
+     state: present
+     vg: "{{ item.0.vgname }}"
+     pvs: "{{ item.0.meta_pvs }}"
+     pv_options: "--dataalignment 256K"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
+  when: item.0.meta_pvs is defined and (item.1.stdout is not defined or item.1.stdout.find('e') != 0)
 
 - name: Create metadata LV for cache
   lvol:
      state: present
      vg: "{{ item.0.vgname }}"
-     lv: "{{ item.0.cachemetalvname }}"
+     lv: "{{ item.0.cachemetalvname | default(item.0.cachelvname ~ '_meta') }}"
      size: "{{ item.0.cachemetalvsize }}"
-  loop: "{{ (gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([]) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
-  when: item.0.cachemetalvname is defined and item.1.stdout.find('e') != 0
+     pvs: "{{ ((item.0.meta_pvs is defined and item.0.meta_pvs) or item.0.cachedisk) | default('') }}"
+     opts: "{{ ((item.0.meta_opts is defined and item.0.meta_opts) or item.0.opts) | default('') }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
+  when: item.1.stdout is not defined or item.1.stdout.find('e') != 0
+
+# - meta: end_play 
 
 #Command on LV ans_vg/cache-ans_thinpool2 does not accept LV type cachepool
 - name: Convert logical volume to a cache pool LV
@@ -85,7 +100,7 @@
         --poolmetadataspare n
         --cachemode {{item.0.cachemode | default('writethrough')}}
         "/dev/{{item.0.vgname}}/{{item.0.cachelvname}}"
-  loop: "{{ (gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([]) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout.find('C') != 0
 
 # Run lvs -a -o +devices to see the cache settings
@@ -93,7 +108,7 @@
   command: >
      lvconvert -y --type cache --cachepool "/dev/{{item.0.vgname}}/{{item.0.cachelvname}}"
      "/dev/{{item.0.vgname}}/{{item.0.cachethinpoolname}}"
-  loop: "{{ (gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([]) | zip(((datapoolcache_attrs is not none and datapoolcache_attrs.results) or default([]))) | list }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapoolcache_attrs is not none and datapoolcache_attrs.results) or default([]))) | list }}"
   loop_control:
    index_var: index
   #check if the LV exists and is not yet converted to a cache volume 

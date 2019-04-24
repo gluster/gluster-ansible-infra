@@ -1,10 +1,43 @@
 ---
+
+- debug:
+   msg: "do vdo!"
+
 # Start the vdo service
 - name: Enable and start vdo service
   service:
     name: vdo
     state: started
     enabled: yes
+
+- name: Check if vdo block device exists
+  shell: test -b {{ item.device }} && echo "1" || echo  "0"
+  register: vdo_device_exists
+  with_items: "{{ gluster_infra_vdo }}"
+  when: item.device is defined
+  
+
+# - name: Update facts about vdo block devices
+#   set_fact: 
+#     gluster_infra_vdo: "{{ gluster_infra_vdo | combine(dm_fact, recursive=true) }}"
+#   vars:
+#     dm_fact: "{ 'dm_exists':'{{ vdo_device_exists.results[index].stdout }}' }"
+#   when: item.device is defined
+#   with_items: "{{ gluster_infra_vdo }}"
+#   loop_control:
+#    index_var: index
+  
+# - debug:
+#    var: gluster_infra_vdo
+# - debug:
+#     var: vdo_device_exists
+
+- name: Record for missing devices for phase 2
+  set_fact:
+   gluster_phase2_has_missing_devices: true
+  loop: "{{ vdo_device_exists.results }}"
+  when: item.stdout is defined and item.stdout == "0"
+
 
 - name: Create VDO with specified size
   vdo:
@@ -27,6 +60,21 @@
     biothreads: "{{ item.biothreads | default('4') }}"
     cputhreads: "{{ item.cputhreads | default('2') }}"
     logicalthreads: "{{ item.logicalthreads | default('1') }}"
-    physicalthreads: "{{ item.physicalthreads | default('1') }}"
-  when: item.device is defined
+    physicalthreads: "{{ item.physicalthreads | default('1') }}"  
   with_items: "{{ gluster_infra_vdo }}"
+  loop_control:
+   index_var: index
+  #when we have a device and it exists 
+  when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
+
+
+# - shell: "vdo status -n {{ item.name }}"
+#   register: vdo_status
+#   with_items: "{{ gluster_infra_vdo }}"
+#   loop_control:
+#    index_var: index
+#   when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
+  
+  
+# - debug:
+#    var: vdo_status

@@ -25,7 +25,7 @@
   import_tasks: thin_volume_create.yml
   when: gluster_infra_lv_logicalvols is defined
   tags:
-    - thinvol
+    - thinvol    
 
 # Setup cache on the given SSD
 - name: Setup cache
@@ -33,3 +33,4 @@
   when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none
   tags:
     - cachesetup
+
