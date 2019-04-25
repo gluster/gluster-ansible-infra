@@ -91,3 +91,10 @@
   when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs | selectattr("atboot") | list | length > 0
   tags:
     - lvmkernelparams
+
+# set fstrim service 
+- name: Configure lvm kernel parameters
+  import_tasks: fstrim_service.yml
+  when: fstrim_service is defined
+  tags:
+    - fstrim

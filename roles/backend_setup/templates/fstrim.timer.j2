@@ -1,0 +1,29 @@
+{% macro timeUnit(unit, max) -%}
+    {%- if unit is not defined or unit is none -%}
+    {{-  max | random -}}
+    {%- else -%}
+    {{- unit -}}
+    {%- endif -%}    
+{%- endmacro -%}
+
+[Timer]
+#AccuracySec=1s
+{% if fstrim_service.schedule is defined and fstrim_service.schedule is not none 
+and  fstrim_service.schedule.dow is not defined and fstrim_service.schedule.dow is not none 
+and  fstrim_service.schedule.hour is not defined and fstrim_service.schedule.hour is not none 
+and  fstrim_service.schedule.second is not defined and fstrim_service.schedule.second is not none 
+-%}
+{%- else -%}
+OnCalendar=
+OnCalendar={%- if fstrim_service.schedule.dow is not defined or fstrim_service.schedule.dow is none -%}
+{{- ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] | random() -}}
+{%- else -%}
+{{- fstrim_service.schedule.dow -}}
+{%- endif -%}
+{{- ' *-*-* ' -}}
+{{- timeUnit(fstrim_service.schedule.hour, 24) -}}
+{{- ':' -}}
+{{- timeUnit(fstrim_service.schedule.minute, 60) -}}
+{{- ':' -}}
+{{- timeUnit(fstrim_service.schedule.second, 60) -}}
+{%- endif -%}
