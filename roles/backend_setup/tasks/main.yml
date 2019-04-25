@@ -40,6 +40,13 @@
   with_items: "{{ gluster_infra_volume_groups | default([]) }}"
   when: item.pvname is defined and item.pvname is search("/dev/mapper/")
 
+# set lvm config
+- name: Configure LVM
+  import_tasks: lvm_config.yml
+  when: gluster_infra_lvm is defined
+  tags:
+    - lvmconfig
+
 
 #phase #1
 - name: Create a vdo disk
