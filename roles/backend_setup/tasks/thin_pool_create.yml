@@ -53,8 +53,6 @@
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
 
-# - debug:
-#    var:  thinpool_attrs  
 
 # https://github.com/ansible/ansible/issues/13262
 # block of tasks, which is executed when there are valid pools and pool items are configured.
@@ -117,9 +115,6 @@
 
 
 
-# - meta: end_play   
-
-
 - name: Convert logical volume to a thin-pool
   shell: >
    lvconvert -y --type thin-pool {{item.vgname}}/{{item.thinpoolname}}
@@ -158,4 +153,4 @@
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and ((item.opts is not defined or "raid" not in item.opts) and item.meta_pvs is not defined and item.meta_opts is not defined)
 #end-block
-# - meta: end_play   
+  

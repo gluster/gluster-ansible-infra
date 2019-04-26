@@ -15,11 +15,6 @@
   with_items: "{{ gluster_infra_lv_logicalvols }}"
   when: item is not none
 
-# - debug:
-#    var: lvt_device_exists
-
-# - debug:
-#    var: gluster_infra_lv_logicalvols
 
 - name: Record for missing devices for phase 2
   set_fact:
@@ -38,11 +33,7 @@
    gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none   
    and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
-
-# - debug:
-#    var:  thinlv_attrs
-
-    
+   
 
 - name: Create a LV thinlv-data
   lvol:
@@ -96,8 +87,6 @@
    and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
    and (thinlv_attrs.results[index].stdout is not defined or thinlv_attrs.results[index].stdout.find("V") != 0)
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
-
-# - meta: end_play 
 
 
 - name: Convert logical volume to a thin-lv

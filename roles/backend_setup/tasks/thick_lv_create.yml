@@ -19,18 +19,6 @@
   loop: "{{ lv_device_exists.results }}"
   when: item.stdout_lines is defined and "0" in item.stdout_lines    
 
-# - debug:
-#    var: lv_device_exists
-
-# - debug:
-#    var: item
-#   with_items: "{{ gluster_infra_thick_lvs }}"
-#   loop_control:
-#    index_var: index
-#   when: lv_device_exists.results[index].stdout_lines is defined and "0" not in lv_device_exists.results[index].stdout_lines
-
-
-# - meta: end_play
 
 # Create a thick logical volume.
 - name: Create thick logical volume

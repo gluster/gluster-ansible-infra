@@ -37,20 +37,12 @@
   register: datapoolcache_attrs
   with_items: "{{ gluster_infra_cache_vars }}"  
 
-# - debug:
-#    var: datapool_attrs
-
-# - debug:
-#    var: item
-#   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip((datapool_attrs is not none and datapool_attrs.results) or []) | list }}"
-
 - name: Change attributes of LV
   lvol:
      state: present
      vg: "{{ item.0.vgname }}"
      thinpool: "{{ item.0.cachetarget | default(item.0.cachethinpoolname) }}"
      opts: " --zero n "
-  #loop: "{{ gluster_infra_cache_vars|default([]) | zip(datapool_attrs.results|default([])) | list }}"
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout is defined and item.1.stdout|length>0
 
@@ -63,6 +55,7 @@
      size: "{{ item.0.cachelvsize }}"
      pvs: "{{ item.0.cachedisk | default('') }}"
      opts: "{{ item.0.opts | default('') }}"
+  #errors throw when trying to modify an existing cachepool attached to a LV   
   #Operation not permitted on hidden LV ans_vg/cache-ans_thinpool2.
   #Sorry, no shrinking of cache-ans_thinpool3 without force=yes.
   when: item.1.stdout.find('C') != 0
@@ -88,7 +81,6 @@
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
   when: item.1.stdout is not defined or item.1.stdout.find('e') != 0
 
-# - meta: end_play 
 
 #Command on LV ans_vg/cache-ans_thinpool2 does not accept LV type cachepool
 - name: Convert logical volume to a cache pool LV

@@ -1,7 +1,5 @@
 ---
 
-- debug:
-   msg: "do vdo!"
 
 # Start the vdo service
 - name: Enable and start vdo service
@@ -16,21 +14,6 @@
   with_items: "{{ gluster_infra_vdo }}"
   when: item.device is defined
   
-
-# - name: Update facts about vdo block devices
-#   set_fact: 
-#     gluster_infra_vdo: "{{ gluster_infra_vdo | combine(dm_fact, recursive=true) }}"
-#   vars:
-#     dm_fact: "{ 'dm_exists':'{{ vdo_device_exists.results[index].stdout }}' }"
-#   when: item.device is defined
-#   with_items: "{{ gluster_infra_vdo }}"
-#   loop_control:
-#    index_var: index
-  
-# - debug:
-#    var: gluster_infra_vdo
-# - debug:
-#     var: vdo_device_exists
 
 - name: Record for missing devices for phase 2
   set_fact:
@@ -67,14 +50,3 @@
   #when we have a device and it exists 
   when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
 
-
-# - shell: "vdo status -n {{ item.name }}"
-#   register: vdo_status
-#   with_items: "{{ gluster_infra_vdo }}"
-#   loop_control:
-#    index_var: index
-#   when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
-  
-  
-# - debug:
-#    var: vdo_status

@@ -54,9 +54,6 @@
   when: item.stdout is defined and item.stdout == "0"
 
 
-# - debug:
-#    var: vg_device_exists
-
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
 - name: Create volume groups
