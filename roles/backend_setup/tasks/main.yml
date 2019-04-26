@@ -88,7 +88,7 @@
 # set kernel boot params for lvm volumes
 - name: Configure lvm kernel parameters
   import_tasks: lvm_kernelparams.yml
-  when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs | selectattr("atboot") | list | length > 0
+  when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs | selectattr("atboot","defined")| selectattr("atboot") | list | length > 0
   tags:
     - lvmkernelparams
 
