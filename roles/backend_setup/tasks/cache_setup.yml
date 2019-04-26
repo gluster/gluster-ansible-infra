@@ -25,13 +25,13 @@
   with_items: "{{ gluster_infra_cache_vars }}"  
 
 - name: Check if logical data volume
-  shell: lvs -a --options 'lv_attr' --noheading {{item.vgname}}/{{item.cachethinpoolname}} | sed 's/^ *//;s/$//'
+  shell: lvs -a --options 'lv_attr' --noheading {{item.vgname}}/{{ item.cachetarget | default(item.cachethinpoolname) }} | sed 's/^ *//;s/$//'
   register: datapool_attrs
   with_items: "{{ gluster_infra_cache_vars }}"  
 
 - name: Check if logical volume exists and is backed by the cache pool
   shell: >
-      lvs -a --options 'data_lv,pool_lv' --separator "|" --noheadings  {{item.vgname}}/{{item.cachethinpoolname}} 2>/dev/null| 
+      lvs -a --options 'data_lv,pool_lv' --separator "|" --noheadings  {{item.vgname}}/{{item.cachetarget | default(item.cachethinpoolname)}} 2>/dev/null| 
          awk -F '|'   '{ gsub(/^\s*\[/,"",$1);gsub(/\]\|?$/,"",$1);if(length($2)>0){ print "echo "$2}else if(length($1)>0){ print "lvs -a --noheadings --options 'pool_lv' {{item.vgname}}/"$1}}'|
          bash|sed 's/^ *//;s/$//'
   register: datapoolcache_attrs
@@ -48,7 +48,7 @@
   lvol:
      state: present
      vg: "{{ item.0.vgname }}"
-     thinpool: "{{ item.0.cachethinpoolname }}"
+     thinpool: "{{ item.0.cachetarget | default(item.0.cachethinpoolname) }}"
      opts: " --zero n "
   #loop: "{{ gluster_infra_cache_vars|default([]) | zip(datapool_attrs.results|default([])) | list }}"
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
@@ -107,7 +107,7 @@
 - name: Convert an existing logical volume to a cache LV
   command: >
      lvconvert -y --type cache --cachepool "/dev/{{item.0.vgname}}/{{item.0.cachelvname}}"
-     "/dev/{{item.0.vgname}}/{{item.0.cachethinpoolname}}"
+     "/dev/{{item.0.vgname}}/{{item.0.cachetarget | default(item.0.cachethinpoolname)}}"
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapoolcache_attrs is not none and datapoolcache_attrs.results) or default([]))) | list }}"
   loop_control:
    index_var: index
