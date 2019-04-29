@@ -1,6 +1,4 @@
 ---
-- debug: var=fstrim_service
-
 
 - name: create fstrim-timer override directory
   file:

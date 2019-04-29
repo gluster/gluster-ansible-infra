@@ -1,6 +1,4 @@
 ---
-# - debug: var=gluster_infra_lvm
-
 
 #thin_pool_autoextend_threshold = 100
 #thin_pool_autoextend_percent = 20
