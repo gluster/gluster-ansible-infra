@@ -196,7 +196,7 @@ gluster_infra_thinpools:
 vgname - The vg which will be extended to setup cache.
 cachedisk - The SSD disk which will be used to setup cache. Complete path, for eg: /dev/sdd
 cachethinpoolname - (deprecated, see: cachetarget) The existing thinpool on the volume group mentioned above.
-cachetarget - THe target thinpool or thick LV that should be cached
+cachetarget - The target thinpool or thick LV that should be cached
 cachelvname - Logical volume name for setting up cache, an lv with this name is created.
 cachelvsize - Cache logical volume size
 cachemetalvname - Meta LV name.
