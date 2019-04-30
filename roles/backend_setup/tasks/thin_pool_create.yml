@@ -30,7 +30,7 @@
      thinpool: "{{ item.thinpoolname }}"
      size: "{{ item.thinpoolsize | default('100%FREE') }}"
      opts: " --chunksize {{ lv_chunksize }}
-             --poolmetadatasize {{ item.poolmetadatasize }}
+             --poolmetadatasize {{ item.poolmetadatasize | default('16G') }}
              --zero n"
   with_items: "{{ gluster_infra_thinpools }}"
   when: gluster_infra_thinpools is defined

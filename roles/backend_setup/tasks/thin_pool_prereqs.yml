@@ -1,0 +1,45 @@
+---
+# POOLMETADATASIZE:
+# The maximum possible size for a metadata LV is *16 GiB*. Gluster *recommends*
+# creating the metadata device of the maximum supported size. You can allocate
+# less than the maximum if space is a concern, but in this case you should
+# allocate a minimum of 0.5% of the pool size.
+
+# Gather the volume group size for the thinpools
+- name: Check the volume-group size of the remote host
+  setup:
+     filter: 'ansible_lvm'
+
+# Build a new list with the vgsize for the given thinpools. There could be
+# cases where thinpoolsize might not be provided. In such cases we compare
+# against the vg size
+- set_fact:
+     g_thinpools: "{{ g_thinpools|default([]) + [item|combine({'vgsize':
+                      ansible_facts['lvm']['vgs'][item.vgname]
+                      ['size_g']|int})] }}"
+  loop: "{{ gluster_infra_thinpools }}"
+  loop_control:
+       label: "{{item.vgname}}"
+
+# If user provides the POOLMETADATASIZE then validate if it is greater than 0.5%
+# of the thinpool size. If the user does not provide POOLMETADATASIZE we default
+# to 16G
+- name: Fail if the given poolmetadatasize is < 0.05% of poolsize
+  set_fact:
+     is_lesser: "{{ item.poolmetadatasize[:-1]|float < 0.005 *
+                    item.thinpoolsize[:-1]|float }}"
+  with_items: "{{ g_thinpools }}"
+  when: item.poolmetadatasize is defined and
+        item.thinpoolsize is defined
+  failed_when: is_lesser
+
+# If thinpoolsize is not defined, we use the entire vg. Thus, we compare if
+# poolmetadatasize is less than 0.5% vg size
+- name: Fail if the given poolmetadatasize is < 0.05% of vg size
+  set_fact:
+     is_lesser: "{{ item.poolmetadatasize[:-1]|float < 0.005 *
+                    item.vgsize|float }}"
+  with_items: "{{ g_thinpools }}"
+  when: item.poolmetadatasize is defined and
+        item.thinpoolsize is not defined
+  failed_when: is_lesser
