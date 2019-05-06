@@ -88,6 +88,29 @@
   tags:
     - fscreate
 
+# When VDO is used, upon creation and activation of thinpools discard is not
+# possible, because of the misaligned discard size between thinpool and VDO.
+# Warning: kernel: device-mapper: thin: Data device (dm-N) max discard sectors
+# smaller than a block: Disabling discard passdown. Is displayed.
+# To overcome this, add command in service file to set
+# /sys/kvdo/max_discard_sectors to 4096 and restart vdo service
+
+- name: Update vdo service to set /sys/kvdo/max_discard_sectors to 4096
+  lineinfile:
+     path: /usr/lib/systemd/system/vdo.service
+     line: 'ExecStartPre=/bin/sh -c "echo 4096 > /sys/kvdo/max_discard_sectors"'
+     insertafter: '^ExecStart'
+  when: gluster_infra_vdo is defined
+  tags:
+    - vdocreate
+
+# Restart vdo service
+- name: Enable and start vdo service
+  service:
+    name: vdo
+    state: started
+    enabled: yes
+
 # Mount the devices
 - name: Mount the devices
   import_tasks: mount.yml
