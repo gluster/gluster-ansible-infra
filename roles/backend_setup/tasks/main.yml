@@ -59,6 +59,13 @@
   tags:
     - thickvol
 
+# Run pre-requisites check before creating thinpools
+- name: Run pre-requisites tests to create thinpools
+  import_tasks: thin_pool_prereqs.yml
+  when: gluster_infra_thinpools is defined
+  tags:
+    - thinprereq
+
 # Create a thinpool for the given volume group
 - name: Create thin pool
   import_tasks: thin_pool_create.yml
