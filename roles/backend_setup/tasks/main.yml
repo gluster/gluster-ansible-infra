@@ -110,6 +110,9 @@
     name: vdo
     state: started
     enabled: yes
+  when: gluster_infra_vdo is defined
+  tags:
+    - vdocreate
 
 # Mount the devices
 - name: Mount the devices
