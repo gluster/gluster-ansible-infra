@@ -51,7 +51,7 @@ respective sub-roles directory.
 | gluster_infra_thick_lvs || UNDEF | Optional. Needed only if thick volume has to be created. This is a dictionary with vgname, lvname, and size as keys. See below for example |
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
 | gluster_infra_cache_vars | | UNDEF | This variable contains list of dictionaries for setting up LV cache. Variable has following keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode. The keys are explained in more detail below|
-|gluster_infra_lvm|  | UNDEF | This variable contains a dictionary, which defines how lvm should autoextend thinpool's
+|gluster_infra_lvm|  | UNDEF | This variable contains a dictionary, which defines how lvm should autoextend thinpools
 |fstrim_service|| UNDEF | This variable contains a dictionary, which enables when and how often a TRIM command should be send to the mounted fs, which support this
 
 -----------------
