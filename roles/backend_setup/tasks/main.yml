@@ -93,7 +93,7 @@
     - lvmkernelparams
 
 # set fstrim service 
-- name: Configure lvm kernel parameters
+- name: Configure fstrim service
   import_tasks: fstrim_service.yml
   when: fstrim_service is defined
   tags:
