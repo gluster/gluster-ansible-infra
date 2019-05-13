@@ -1,0 +1,19 @@
+---
+
+#thin_pool_autoextend_threshold = 100
+#thin_pool_autoextend_percent = 20
+- name: Configure lvm thinpool extend threshold
+  lineinfile: 
+    path: /etc/lvm/lvm.conf
+    regex: "thin_pool_autoextend_threshold"
+    backrefs: true
+    line: thin_pool_autoextend_threshold = {{ gluster_infra_lvm.autoexpand_threshold }}
+  when: gluster_infra_lvm is defined and gluster_infra_lvm.autoexpand_threshold is defined
+
+- name: Configure lvm thinpool extend percentage
+  lineinfile: 
+    path: /etc/lvm/lvm.conf
+    regex: "thin_pool_autoextend_percent"
+    backrefs: true
+    line: thin_pool_autoextend_percent = {{ gluster_infra_lvm.autoexpand_percentage }}
+  when: gluster_infra_lvm is defined and gluster_infra_lvm.autoexpand_percentage is defined

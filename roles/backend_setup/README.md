@@ -85,7 +85,7 @@ For Example:
 gluster_infra_volume_groups:
    - { vgname: 'volgroup1', pvname: '/dev/sdb' }
    - { vgname: 'volgroup2', pvname: '/dev/mapper/vdo_device1' }
-   - { vgname: 'volgroup3', pvname: '/dev/sdc,/dev/sdd'
+   - { vgname: 'volgroup3', pvname: '/dev/sdc,/dev/sdd' }
 ```
 
 #### Logical Volume variable

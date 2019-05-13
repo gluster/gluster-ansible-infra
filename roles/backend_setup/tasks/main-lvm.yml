@@ -1,0 +1,36 @@
+---
+
+- name: Create a volume group
+  import_tasks: vg_create.yml
+  when: gluster_infra_volume_groups is defined
+  tags:
+    - vgcreate
+
+# If a thick volume is requested for the same vg
+- name: Create a thick logical volume
+  import_tasks: thick_lv_create.yml
+  when: gluster_infra_thick_lvs is defined
+  tags:
+    - thickvol
+
+# Create a thinpool for the given volume group
+- name: Create thin pool
+  import_tasks: thin_pool_create.yml
+  when: gluster_infra_thinpools is defined
+  tags:
+    - thinpool
+
+# Create a thin volume
+- name: Create thin logical volume
+  import_tasks: thin_volume_create.yml
+  when: gluster_infra_lv_logicalvols is defined
+  tags:
+    - thinvol    
+
+# Setup cache on the given SSD
+- name: Setup cache
+  import_tasks: cache_setup.yml
+  when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none
+  tags:
+    - cachesetup
+

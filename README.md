@@ -51,6 +51,8 @@ respective sub-roles directory.
 | gluster_infra_thick_lvs || UNDEF | Optional. Needed only if thick volume has to be created. This is a dictionary with vgname, lvname, and size as keys. See below for example |
 | gluster_infra_mount_devices | | UNDEF | This is a dictionary with mount values. path, vgname, and lvname are the keys. |
 | gluster_infra_cache_vars | | UNDEF | This variable contains list of dictionaries for setting up LV cache. Variable has following keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode. The keys are explained in more detail below|
+|gluster_infra_lvm|  | UNDEF | This variable contains a dictionary, which defines how lvm should autoextend thinpools
+|fstrim_service|| UNDEF | This variable contains a dictionary, which enables when and how often a TRIM command should be send to the mounted fs, which support this
 
 -----------------
 #### VDO Variable
@@ -104,9 +106,11 @@ For Example:
 gluster_infra_volume_groups:
    - { vgname: 'volgroup1', pvname: '/dev/sdb' }
    - { vgname: 'volgroup2', pvname: '/dev/mapper/vdo_device1' }
-   - { vgname: 'volgroup3', pvname: '/dev/sdc,/dev/sdd'
+   - { vgname: 'volgroup3', pvname: '/dev/sdc,/dev/sdd' }
 ```
 
+* vgname: Required, string defining the VG name to belong to
+* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled corectly in simple cases
 -----------------------
 #### Logical Volume variable
 
@@ -119,7 +123,18 @@ For Example:
 gluster_infra_lv_logicalvols:
    - { vgname: 'vg_vdb', thinpool: 'foo_thinpool', lvname: 'vg_vdb_thinlv', lvsize: '500G' }
    - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
+   - { vgname: 'ans_vg', thinpool: 'ans_thinpool4', lvname: 'ans_thinlv5', lvsize: '1G', pvs: '/dev/sdd1,/dev/sdg1', opts: '--type raid1', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdf1' }
 ```
+
+* vgname: Required, string defining the VG name to belong to
+* lvname: Required, string defining the name of the LV
+* thinpool: Required, string defining the name the thinpool this LV belongs to
+* lvsize: Optional, Default 100%, size of LV
+* pvs: Optional, Default empty, the physical devices the LV should be placed on
+* opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
+* meta_pvs: Optional, Default empty, the physical devices the metadata volume should be placed on
+* meta_opts: Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
+* skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
 
 -----------------------
 #### Thick LV variable
@@ -134,25 +149,40 @@ For Example:
 gluster_infra_thick_lvs:
    - { vgname: 'vg_sdb', lvname: 'thick_lv_1', size: '500G' }
    - { vgname: 'vg_sdc', lvname: 'thick_lv_2', size: '100G' }
+   - { vgname: 'ans_vg', lvname: 'ans_thick2_vdo', size: '9G', atboot: yes, skipfs: yes, opts: "", pvs: '/dev/sdd1,/dev/sdg1' }
 ```
+
+* vgname: Required, string defining the VG name to belong to
+* lvname: Required, string defining the name of the LV
+* lvsize: Optional, Default 100%, size of LV
+* pvs: Optional, Default empty, the physical devices the LV should be placed on
+* opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
+* skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
+* atboot: Optional Boolean, Default no. When yes the parameter "rd.lvm.lv=DM" will be added to the kernel parameters in grub
 
 ----------------------
 #### Thinpool variable
 
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_thinpools || UNDEF | This is a list of hash/dictionary variables, with keys: vgname, thinpoolname, thinpoolsize, and poolmetadatasize. See below for example. |
+| gluster_infra_thinpools || UNDEF | This is a list of hash/dictionary variables, with keys: vgname, thinpoolname, thinpoolsize, poolmetadatasize, pvs, opts, meta_pvs and meta_opts. See below for example. |
 
 
 ```
 gluster_infra_thinpools:
   - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '10G', poolmetadatasize: '1G' }
   - {vgname: 'vg_vdc', thinpoolname: 'bar_thinpool', thinpoolsize: '20G', poolmetadatasize: '1G' }
+  - {vgname: 'ans_vg', thinpoolname: 'ans_thinpool', thinpoolsize: '1G', poolmetadatasize: '15M', opts: "", pvs: '/dev/sdd1,/dev/sdg1', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdf1' }
 ```
 
 * poolmetadatasize: Metadata size for LV, recommended value 16G is used by default. That value can be overridden by setting the variable. Include the unit [G\|M\|K]
 * thinpoolname: Can be ignored, a name is formed using the given vgname followed by '_thinpool'
 * vgname: Name of the volume group this thinpool should belong to.
+* thinpoolsize: The size of the thinpool
+* pvs: Optional, Default empty, the physical devices the LV should be placed on
+* opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
+* meta_pvs: Optional, Default empty, the physical devices the metadata volume should be placed on
+* meta_opts: Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
 
 
 -----------------------------------------
@@ -160,22 +190,26 @@ gluster_infra_thinpools:
 
 | Name                     |Choices| Default value         | Comments                          |
 |--------------------------|-------|-----------------------|-----------------------------------|
-| gluster_infra_cache_vars | | UNDEF | This is a dictionary with keys: vgname, cachedisk, cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode |
+| gluster_infra_cache_vars | | UNDEF | This is a dictionary with keys: vgname, cachedisk, cachetarget/cachethinpoolname, cachelvname, cachelvsize, cachemetalvname, cachemetalvsize, cachemode |
 
 ```
 vgname - The vg which will be extended to setup cache.
 cachedisk - The SSD disk which will be used to setup cache. Complete path, for eg: /dev/sdd
-cachethinpoolname - The existing thinpool on the volume group mentioned above.
+cachethinpoolname - (deprecated, see: cachetarget) The existing thinpool on the volume group mentioned above.
+cachetarget - The target thinpool or thick LV that should be cached
 cachelvname - Logical volume name for setting up cache, an lv with this name is created.
 cachelvsize - Cache logical volume size
 cachemetalvname - Meta LV name.
 cachemetalvsize - Meta LV size
 cachemode - Cachemode, default is writethrough.
+meta_pvs - Optional, Default empty, the physical devices the metadata volume should be placed on
+meta_opts - Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
 ```
 
 For example:
 ```
    - { vgname: 'vg_vdb', cachedisk: '/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
+   - { vgname: 'ans_vg', cachedisk: '/dev/sde1,/dev/sdf1', cachetarget: 'ans_thick', cachelvname: 'cache-ans_thinpool', cachelvsize: '10G', cachemetalvsize: '1G', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdh1', cachemode: 'writethrough' }
 ```
 
 -----------------------------------------
@@ -193,6 +227,45 @@ gluster_infra_mount_devices:
 
 -----------------------------------------
 
+#### Variables for configuring LVM auto extend for thin pools
+-----------------------------------------
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| gluster_infra_lvm | | UNDEF | This is a dictionary to configure the LVM auto extend. autoexpand_threshold and autoexpand_percentage are the keys. |
+
+```
+For example:
+gluster_infra_lvm: {
+      autoexpand_threshold: 70,
+      autoexpand_percentage: 15,
+   }
+```
+
+* autoexpand_threshold: Optional default empty, the threshold in percentage when LVM should try to expand the thinpool (see lvm.conf)
+* autoexpand_percentage: Optional default empty, the percentage the thinpool should be expanded with (see lvm.conf)
+
+#### Variables for configuring fstimer service and timer
+-----------------------------------------
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| fstrim_service | | UNDEF | This is a dictionary to configure the fstrim service. enabled and schedule are the keys. |
+
+```
+For example:
+fstrim_service: {
+      enabled: yes,
+      schedule: {         
+         hour: "{{ range(1, 4) | random() }}"
+      }
+   }
+```
+
+* enabled: Boolean default no. When yes the fstrim.timer unit will be enabled
+* schedule: Optional dictionary, to set the timer, by default doesn't override the schedule. can be usefull to not trigger the trim at the same time across the cluster. optionable subkeys;
+   * dow: Optional String, specifying the Dow of Week as required by the systemd calander. When empty a random day is chosen.
+   * hour: Optional int, default a random hour, setting the hour the fstrim should run
+   * minute: Optional int, default a random minute, setting the minute the fstrim should run
+   * second: Optional int, default a random second, setting the second the fstrim should run
 
 Example Playbook
 ----------------
@@ -226,6 +299,20 @@ Configure the ports and services related to GlusterFS, create logical volumes an
      gluster_infra_diskcount: 10
      # Stripe unit size always in KiB
      gluster_infra_stripe_unit_size: 128
+
+     # enable lvm auto-extend feature so that when the pool is at 70% it will be extended with 15%
+     gluster_infra_lvm: {
+      autoexpand_threshold: 70,
+      autoexpand_percentage: 15,
+     }
+   
+     # enable fstrim service so the TRIM command is executed once in a while to clean either ssd or thin/vdo volumes
+     fstrim_service: {
+       enabled: yes,
+       schedule: {         
+         hour: "{{ range(1, 4) | random() }}"
+       }
+      }
 
      # Variables for creating volume group
      gluster_infra_volume_groups:

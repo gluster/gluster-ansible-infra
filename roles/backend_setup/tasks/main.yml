@@ -37,48 +37,38 @@
 - name: Record VDO devices (if any)
   set_fact:
      vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
-  with_items: "{{ gluster_infra_volume_groups }}"
-  when: item.pvname is search("/dev/mapper/")
+  with_items: "{{ gluster_infra_volume_groups | default([]) }}"
+  when: item.pvname is defined and item.pvname is search("/dev/mapper/")
 
+# set lvm config
+- name: Configure LVM
+  import_tasks: lvm_config.yml
+  when: gluster_infra_lvm is defined
+  tags:
+    - lvmconfig
+
+
+#phase #1
 - name: Create a vdo disk
   import_tasks: vdo_create.yml
   when: gluster_infra_vdo is defined
   tags:
     - vdocreate
 
-- name: Create a volume group
-  import_tasks: vg_create.yml
-  when: gluster_infra_volume_groups is defined
-  tags:
-    - vgcreate
+- name: "Execute phase #1 of LVM"
+  import_tasks: main-lvm.yml
 
-# If a thick volume is requested for the same vg
-- name: Create a thick logical volume
-  import_tasks: thick_lv_create.yml
-  when: gluster_infra_thick_lvs is defined
+#phase #2
+- name: "Create a vdo disk after LVM for phase #2"
+  import_tasks: vdo_create.yml
+  when: gluster_infra_vdo is defined and gluster_phase2_has_missing_devices is defined and gluster_phase2_has_missing_devices
   tags:
-    - thickvol
+    - vdocreate
 
-# Create a thinpool for the given volume group
-- name: Create thin pool
-  import_tasks: thin_pool_create.yml
-  when: gluster_infra_thinpools is defined
-  tags:
-    - thinpool
+- name: "Execute phase #2 of LVM"
+  import_tasks: main-lvm.yml
+  when: gluster_phase2_has_missing_devices is defined and gluster_phase2_has_missing_devices
 
-# Create a thin volume
-- name: Create thin logical volume
-  import_tasks: thin_volume_create.yml
-  when: gluster_infra_lv_logicalvols is defined
-  tags:
-    - thinvol
-
-# Setup cache on the given SSD
-- name: Setup cache
-  import_tasks: cache_setup.yml
-  when: gluster_infra_cache_vars is defined
-  tags:
-    - cachesetup
 
 # Create a filesystem on the disks.
 - name: Create a filesystem on the disks
@@ -117,6 +107,20 @@
 # Mount the devices
 - name: Mount the devices
   import_tasks: mount.yml
-  when: gluster_infra_mount_devices is defined
+  when: gluster_infra_mount_devices is defined and gluster_infra_mount_devices is not none
   tags:
     - mount
+
+# set kernel boot params for lvm volumes
+- name: Configure lvm kernel parameters
+  import_tasks: lvm_kernelparams.yml
+  when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs | selectattr("atboot","defined")| selectattr("atboot") | list | length > 0
+  tags:
+    - lvmkernelparams
+
+# set fstrim service 
+- name: Configure fstrim service
+  import_tasks: fstrim_service.yml
+  when: fstrim_service is defined
+  tags:
+    - fstrim

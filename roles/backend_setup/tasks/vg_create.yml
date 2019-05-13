@@ -41,6 +41,19 @@
      gluster_infra_disktype == 'RAID10' or
      gluster_infra_disktype == 'RAID5'
 
+- name: Check if vg block device exists
+  shell: test -b {{ item.pvname }} && echo "1" || echo  "0"
+  register: vg_device_exists
+  with_items: "{{ gluster_infra_volume_groups }}"
+  when: item.pvname is defined
+  
+- name: Record for missing devices for phase 2
+  set_fact:
+   gluster_phase2_has_missing_devices: true
+  loop: "{{ vg_device_exists.results }}"
+  when: item.stdout is defined and item.stdout == "0"
+
+
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
 - name: Create volume groups
@@ -52,3 +65,7 @@
     # pesize is 4m by default for JBODs
     pesize: "{{ vg_pesize | default(4) }}"
   with_items: "{{ gluster_infra_volume_groups }}"
+  loop_control:
+   index_var: index
+  when: item.pvname is defined and vg_device_exists.results[index].stdout is defined and vg_device_exists.results[index].stdout == "1"
+

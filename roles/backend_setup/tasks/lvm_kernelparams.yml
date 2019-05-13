@@ -1,0 +1,48 @@
+---
+
+
+- name: Add lvm thick volumes as kernel parameter
+  lineinfile: 
+    path: /etc/default/grub
+    regex: "^LVM_ADDITIONAL_DMS"
+    insertbefore: BOF
+    firstmatch: true
+    line:  >
+      {%- set output = [] -%}
+        {%- for lv in gluster_infra_thick_lvs -%}
+          {%- if lv.atboot is defined and lv.atboot -%}
+            {{- output.append( 'rd.lvm.lv=' ~ lv.vgname ~ '/' ~ lv.lvname) -}}
+          {%- endif -%}
+        {%- endfor -%}
+      {{- 'LVM_ADDITIONAL_DMS="' ~ (output | join(' ')) ~ '"' -}}
+  when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs | selectattr("atboot","defined")| selectattr("atboot") | list | length > 0
+  register: changed_lv_boot
+
+- name: check if grub kernel parameter contains the LVM_ADDITIONAL_DMS variable
+  shell: "grep -E 'GRUB_CMDLINE_LINUX=.*?\\$LVM_ADDITIONAL_DMS.*?' /etc/default/grub"
+  register: has_grub_var
+  failed_when: false
+  
+- name: add lvm volumes to grub kernel parameter line  
+  lineinfile:
+   path: /etc/default/grub
+   regex: 'GRUB_CMDLINE_LINUX="(.*)"'
+   line: 'GRUB_CMDLINE_LINUX="\1 $LVM_ADDITIONAL_DMS"'   
+   backrefs: yes
+  when: has_grub_var.rc != 0
+  register: changed_grub_cmd_line
+
+- stat: path=/boot/efi/EFI/centos/grub.cfg
+  register: grub_conf
+
+- stat: path=/sys/firmware/efi
+  register: firm_efi
+
+
+- name: "rebuild efi boot"
+  shell: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+  when: (changed_grub_cmd_line.changed or changed_lv_boot.changed) and firm_efi.stat.exists and grub_conf.stat.exists
+
+- name: "rebuild bios boot"
+  shell: grub2-mkconfig -o /boot/grub2/grub.cfg
+  when: (changed_grub_cmd_line.changed or changed_lv_boot.changed) and firm_efi.stat.exists==false and grub_conf.stat.exists==false

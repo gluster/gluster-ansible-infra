@@ -1,4 +1,25 @@
 ---
+
+- name: Check if thick-lv block devices exists
+  shell: >
+   {%if (item.pvs is defined) %}
+   {% for pvsname in item.pvs.split(",")  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+   {% else %}
+   echo "1"
+   {% endif %}
+  register: lv_device_exists
+  with_items: "{{ gluster_infra_thick_lvs }}"
+  when: item is not none
+
+- name: Record for missing devices for phase 2
+  set_fact:
+   gluster_phase2_has_missing_devices: true
+  loop: "{{ lv_device_exists.results }}"
+  when: item.stdout_lines is defined and "0" in item.stdout_lines    
+
+
 # Create a thick logical volume.
 - name: Create thick logical volume
   lvol:
@@ -6,4 +27,9 @@
     vg: "{{ item.vgname }}"
     lv: "{{ item.lvname }}"
     size: "{{ item.size }}"
+    pvs: "{{ item.pvs | default() }}"
+    opts: "{{ item.opts | default() }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
+  loop_control:
+   index_var: index
+  when: item is not none and lv_device_exists.results[index].stdout_lines is defined and "0" not in lv_device_exists.results[index].stdout_lines

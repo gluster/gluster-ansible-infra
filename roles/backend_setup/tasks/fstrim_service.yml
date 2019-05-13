@@ -1,0 +1,23 @@
+---
+
+- name: create fstrim-timer override directory
+  file:
+    path: /etc/systemd/system/fstrim.timer.d/
+    state: directory
+
+- name: schedule fstrim-timer
+  template:
+    src: fstrim.timer.j2
+    dest: /etc/systemd/system/fstrim.timer.d/override.conf
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: manage fstrim-timer
+  systemd:
+    name: fstrim.timer
+    state: "{{ ((fstrim_service.enabled is defined and fstrim_service.enabled) and 'started') or 'stopped' }}"
+    enabled: "{{ ((fstrim_service.enabled is defined and fstrim_service.enabled) and true) or false }}"
+   
+
