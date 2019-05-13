@@ -100,7 +100,7 @@
      vg: "{{ item.vgname }}"
      lv: "{{ item.thinpoolname }}_meta"
      pvs: "{{ ((item.meta_pvs is defined and item.meta_pvs) or item.pvs) | default() }}"     
-     size: "{{ item.poolmetadatasize | default('4G') }}"
+     size: "{{ item.poolmetadatasize | default('16G') }}"
      opts: " 
              {{ ((item.meta_opts is defined and item.meta_opts) or item.opts) | default('') }} "
   with_items: "{{ gluster_infra_thinpools }}"
