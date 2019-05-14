@@ -45,8 +45,9 @@
     name: vdo
     state: started
     enabled: yes
-  when: gluster_infra_vdo_will_create_vdo is defined and gluster_infra_vdo_will_create_vdo==true
-        and gluster_infra_installed_vdo_deps is defined and gluster_infra_installed_vdo_deps==true
+  when: nsible_os_family != 'RedHat' or
+        (gluster_infra_vdo_will_create_vdo is defined and gluster_infra_vdo_will_create_vdo==true
+        and gluster_infra_installed_vdo_deps is defined and gluster_infra_installed_vdo_deps==true)
 
 - name: Create VDO with specified size
   vdo:
