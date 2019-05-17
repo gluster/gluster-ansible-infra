@@ -1,13 +1,6 @@
 ---
 
 
-# Start the vdo service
-- name: Enable and start vdo service
-  service:
-    name: vdo
-    state: started
-    enabled: yes
-
 - name: Check if vdo block device exists
   shell: test -b {{ item.device }} && echo "1" || echo  "0"
   register: vdo_device_exists
@@ -21,6 +14,40 @@
   loop: "{{ vdo_device_exists.results }}"
   when: item.stdout is defined and item.stdout == "0"
 
+- name: "set fact if it will at least install 1 vdo device"
+  set_fact:
+   gluster_infra_vdo_will_create_vdo: true
+  loop: "{{ gluster_infra_vdo }}"
+  loop_control:
+   index_var: index
+  when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
+
+- name: Install VDO dependencies
+  #maybe use package module?
+  yum:
+   name: "{{ packages }}"
+  register: vdo_deps 
+  vars:
+    packages:
+      - kmod-kvdo
+      - vdo
+  when: ansible_os_family == 'RedHat' and gluster_infra_vdo_will_create_vdo is defined and gluster_infra_vdo_will_create_vdo==true
+        and (gluster_infra_installed_vdo_deps is not defined or not gluster_infra_installed_vdo_deps)
+
+- name: set fact about vdo installed deps
+  set_fact:
+    gluster_infra_installed_vdo_deps: "{{not vdo_deps.failed}}"
+  when: gluster_infra_installed_vdo_deps is not defined and vdo_deps is defined and vdo_deps.failed is defined
+
+# Start the vdo service (service can only be started after the dependencies are installed)
+- name: Enable and start vdo service
+  service:
+    name: vdo
+    state: started
+    enabled: yes
+  when: ansible_os_family != 'RedHat' or
+        (gluster_infra_vdo_will_create_vdo is defined and gluster_infra_vdo_will_create_vdo==true
+        and gluster_infra_installed_vdo_deps is defined and gluster_infra_installed_vdo_deps==true)
 
 - name: Create VDO with specified size
   vdo:
