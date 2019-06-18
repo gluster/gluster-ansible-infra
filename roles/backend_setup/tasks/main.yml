@@ -40,6 +40,36 @@
   with_items: "{{ gluster_infra_volume_groups | default([]) }}"
   when: item.pvname is defined and item.pvname is search("/dev/mapper/")
 
+# When VDO is used, upon creation and activation of thinpools discard is not
+# possible, because of the misaligned discard size between thinpool and VDO.
+# Warning: kernel: device-mapper: thin: Data device (dm-N) max discard sectors
+# smaller than a block: Disabling discard passdown. Is displayed.
+# To overcome this, add command in service file to set
+# /sys/kvdo/max_discard_sectors to 4096 and restart vdo service
+
+- name: Update vdo service to set /sys/kvdo/max_discard_sectors to 4096
+  blockinfile:
+     path: /usr/lib/systemd/system/vdo.service
+     insertbefore: '^ExecStart='
+     marker: "#{mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT THIS LINE"
+     block: |
+        ExecStartPre=/sbin/modprobe -a uds
+        ExecStartPre=/sbin/modprobe -a kvdo
+        ExecStartPre=/bin/sh -c "echo 4096 > /sys/kvdo/max_discard_sectors"
+  when: gluster_infra_vdo is defined
+  tags:
+    - vdocreate
+
+# Restart vdo service
+- name: Restart vdo services
+  service:
+    name: vdo
+    state: restarted
+    enabled: yes
+  when: gluster_infra_vdo is defined
+  tags:
+    - vdocreate
+
 # set lvm config
 - name: Configure LVM
   import_tasks: lvm_config.yml
@@ -78,32 +108,6 @@
   tags:
     - fscreate
 
-# When VDO is used, upon creation and activation of thinpools discard is not
-# possible, because of the misaligned discard size between thinpool and VDO.
-# Warning: kernel: device-mapper: thin: Data device (dm-N) max discard sectors
-# smaller than a block: Disabling discard passdown. Is displayed.
-# To overcome this, add command in service file to set
-# /sys/kvdo/max_discard_sectors to 4096 and restart vdo service
-
-- name: Update vdo service to set /sys/kvdo/max_discard_sectors to 4096
-  lineinfile:
-     path: /usr/lib/systemd/system/vdo.service
-     line: 'ExecStartPre=/bin/sh -c "echo 4096 > /sys/kvdo/max_discard_sectors"'
-     insertafter: '^ExecStart'
-  when: gluster_infra_vdo is defined
-  tags:
-    - vdocreate
-
-# Restart vdo service
-- name: Enable and start vdo service
-  service:
-    name: vdo
-    state: started
-    enabled: yes
-  when: gluster_infra_vdo is defined
-  tags:
-    - vdocreate
-
 # Mount the devices
 - name: Mount the devices
   import_tasks: mount.yml
@@ -118,7 +122,7 @@
   tags:
     - lvmkernelparams
 
-# set fstrim service 
+# set fstrim service
 - name: Configure fstrim service
   import_tasks: fstrim_service.yml
   when: fstrim_service is defined
