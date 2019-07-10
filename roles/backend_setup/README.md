@@ -140,6 +140,7 @@ gluster_infra_thinpools:
 ```
 vgname - The vg which will be extended to setup cache.
 cachedisk - The SSD disk which will be used to setup cache. Complete path, for eg: /dev/sdd
+            NOTE: In case of Ansible >= 2.8 this variable is a comma separated list of PVs, comprising of the existing PVs part of the volume group and the PV that has to be added as cache. For example if a cache disk sdd has to be added to a volume group foo_vg containing PVs sdb and sdc, this variable looks like '/dev/sdb,/dev/sdc,/dev/sdd'
 cachethinpoolname - The existing thinpool on the volume group mentioned above.
 cachelvname - Logical volume name for setting up cache, an lv with this name is created.
 cachelvsize - Cache logical volume size
@@ -150,7 +151,7 @@ cachemode - Cachemode, default is writethrough.
 
 For example:
 ```
-   - { vgname: 'vg_vdb', cachedisk: '/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
+   - { vgname: 'vg_vdb', cachedisk: '/dev/vdc,/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
 ```
 
 
