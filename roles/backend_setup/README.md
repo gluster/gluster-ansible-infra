@@ -151,7 +151,7 @@ cachemode - Cachemode, default is writethrough.
 
 For example:
 ```
-   - { vgname: 'vg_vdb', cachedisk: '/dev/vdc,/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
+   - { vgname: 'vg_vdc', cachedisk: '/dev/vdc,/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
 ```
 
 
