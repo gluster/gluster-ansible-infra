@@ -6,6 +6,14 @@
 # Extend the existing volume group with the SSD (assuming SSD is used for
 # caching)
 
+# Fail if the cache disk is not present
+- name: Check if the cachedisk exists, else fail
+  stat:
+     path: "{{ item.cachedisk }}"
+  register: result
+  failed_when: not result.stat.exists
+  with_items: "{{ gluster_infra_cache_vars }}"
+
 - name: Extend volume group
   lvg:
      state: present
