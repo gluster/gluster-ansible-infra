@@ -38,9 +38,6 @@
   when: item is not none
 
 
-- debug:
-   var: lvtp_device_exists
-
 - name: Record for missing devices for phase 2
   set_fact:
    gluster_phase2_has_missing_devices: true
@@ -59,72 +56,6 @@
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
 
-
-- name: Create a LV thinpool-data
-  debug:
-     var: item.pvs.split(",") | default([]) | map("trim") | list
-  loop: "{{ gluster_infra_thinpools }}"
-  loop_control:
-   index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
-   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
-   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
-   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
-
-
-- debug:
-   var: hostvars[inventory_hostname].ansible_lvm.vgs
-
-- name: Create a LV thinpool-data222222
-  debug:
-     #var: (hostvars[inventory_hostname].ansible_lvm.pvs | dict2items | json_query('[?value.vg==`'+item.vgname+'`].key') +
-     var:  (item.pvs|default('')).split(',') | map('trim') | list | union((item.meta_pvs | default('')).split(',') | map('trim') | list) | union(hostvars[inventory_hostname].ansible_lvm.pvs | dict2items | json_query('[?value.vg==`'+item.vgname+'`].key') ) | select | list | unique 
-     #var:  (item.pvs|default('')).split(',') | map('trim') | list | union((item.meta_pvs | default('')).split(',') | map('trim') | list) | unique
-     #
-     #| json_query('*|[?@.vg==`ans_vg2`]')
-   #   var: hostvars[inventory_hostname].ansible_lvm.pvs 
-  loop: "{{ gluster_infra_thinpools }}"
-  loop_control:
-   index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
-   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
-   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
-   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
-
-- name: Create a LV thinpool-data33333
-  debug:
-     var: item.vgname
-   #   var: hostvars[inventory_hostname].ansible_lvm.pvs 
-  loop: "{{ gluster_infra_thinpools }}"
-  loop_control:
-   index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
-   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
-   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
-   and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
-
-
-
-- name: Make sure meta pv's exists in volume group
-  debug:
-     var: item.meta_pvs.split(",") | map("trim") | list
-  loop: "{{ gluster_infra_thinpools }}"
-  loop_control:
-   index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
-   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
-   and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
-   and item.meta_pvs is defined
-
-
 - include_tasks: get_vg_groupings.yml
   vars: 
    volume_groups: >-
@@ -140,8 +71,6 @@
       {{- output | to_json -}}
   when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
 
-
-
 # https://github.com/ansible/ansible/issues/13262
 # block of tasks, which is executed when there are valid pools and pool items are configured.
 # also it checks if the pool doesn't already exists
@@ -152,7 +81,6 @@
      state: present
      vg: "{{ (item.value | first).vgname }}"
      pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
-     #pvs: "{{ (item.pvs|default('')).split(',') | map('trim') | list | union((item.meta_pvs | default('')).split(',') | map('trim') | list) | union(hostvars[inventory_hostname].ansible_lvm.pvs | dict2items | json_query('[?value.vg==`'+item.vgname+'`].key') ) | select | list | unique | join(',') }}"     
      pv_options: "--dataalignment 256K"  
   loop: "{{ gluster_volumes_by_groupname | dict2items }}"
   loop_control:
@@ -161,15 +89,10 @@
    gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
    and item.value|length>0
 
-# - meta: end_play
-
-
 - name: update LVM fact's
   setup: 
    filter: 'ansible_lvm'
   when: gluster_changed_vgs.changed 
-
-
 
 - name: Create a LV thinpool-data
   lvol:
@@ -191,7 +114,6 @@
    and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
 
- 
 
 - name: Create a LV thinpool-meta
   lvol:

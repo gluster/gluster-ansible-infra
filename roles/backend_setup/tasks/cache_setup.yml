@@ -6,14 +6,6 @@
 # Extend the existing volume group with the SSD (assuming SSD is used for
 # caching)
 
-# - name: Extend volume group
-#   lvg:
-#      state: present
-#      vg: "{{ item.vgname }}"
-#      pvs: "{{ item.cachedisk }}"
-#      pv_options: "--dataalignment 256K"
-#   with_items: "{{ gluster_infra_cache_vars }}"
-
 - name: Check if cachepool exists
   shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.cachelvname}}| sed 's/^ *//;s/$//'"    
   register: checkpool_attrs
@@ -46,13 +38,6 @@
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout is defined and item.1.stdout|length>0
 
-
-- debug: 
-   var: gluster_infra_cache_vars
-
-- debug: 
-   var: checkpoolmeta_attrs
-
 - include_tasks: get_vg_groupings.yml
   vars: 
    volume_groups: >-
@@ -66,9 +51,6 @@
       {%- endfor -%}
       {{- output | to_json -}}
   when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none and gluster_infra_cache_vars|length >0    
-
-- debug: 
-   var: gluster_volumes_by_groupname
 
 - name: Make sure meta and cache pv's exists in volume group
   register: gluster_changed_vgs
@@ -89,9 +71,6 @@
    filter: 'ansible_lvm'
   when: gluster_changed_vgs.changed 
 
-# - meta: end_play
-
-
 - name: Create LV for cache
   lvol:
      state: present
@@ -106,15 +85,6 @@
   #Sorry, no shrinking of cache-ans_thinpool3 without force=yes.
   when: item.1.stdout.find('C') != 0
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
-
-# - name: Make sure meta pv's exists in volume group
-#   lvg:
-#      state: present
-#      vg: "{{ item.0.vgname }}"
-#      pvs: "{{ item.0.meta_pvs }}"
-#      pv_options: "--dataalignment 256K"
-#   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
-#   when: item.0.meta_pvs is defined and (item.1.stdout is not defined or item.1.stdout.find('e') != 0)
 
 - name: Create metadata LV for cache
   lvol:

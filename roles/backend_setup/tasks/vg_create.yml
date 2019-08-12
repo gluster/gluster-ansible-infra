@@ -40,157 +40,18 @@
      gluster_infra_disktype == 'RAID6' or
      gluster_infra_disktype == 'RAID10' or
      gluster_infra_disktype == 'RAID5'
-
-
-# - name: Check if vg block device exists
-#   shell: test -b {{ item.pvname }} && echo "1" || echo  "0"
-#   register: vg_device_exists
-#   with_items: "{{ gluster_infra_volume_groups }}"
-#   when: item.pvname is defined
-  
-# - name: Record for missing devices for phase 2
-#   set_fact:
-#    gluster_phase2_has_missing_devices: true
-#   loop: "{{ vg_device_exists.results }}"
-#   when: item.stdout is defined and item.stdout == "0"
-
-
-- debug: 
-   var: hostvars[inventory_hostname].ansible_lvm.pvs
-- debug: 
-   var: "{{ gluster_infra_volume_groups| groupby('vgname') }}"
-
-# "gluster_volumes_by_groupname_pre": {
-#         "ans_vg2": [
-#             {
-#                 "pvname": "/dev/sdg1",
-#                 "vgname": "ans_vg2"
-#             },
-#             {
-#                 "pvname": "/dev/sdd1",
-#                 "vgname": "ans_vg2"
-#             },
-#             {
-#                 "pvname": "/dev/sde1",
-#                 "vgname": "ans_vg2"
-#             },
-#             {
-#                 "pvname": "/dev/sdh1",
-#                 "vgname": "ans_vg2"
-#             }
-#         ],
-#         "ans_vg3": [
-#             {
-#                 "pvname": "/dev/sdf1",
-#                 "vgname": "ans_vg3"
-#             },
-#             {
-#                 "pvname": "/dev/sdi1",
-#                 "vgname": "ans_vg3"
-#             }
-#         ]
-#     }
-# - name: Group devices by volume group name, including existing devices
-#   set_fact:
-#    gluster_volumes_by_groupname_pre: >-
-#     {%- set output={} -%}
-#     {%- for grouper, devicesConf in gluster_infra_volume_groups| groupby('vgname') -%}
-#       {%- set confs=[] -%}    
-#       {%- for deviceConf in devicesConf -%}
-#         {%- if deviceConf.pvname is defined -%}
-#           {%- for device in deviceConf.pvname.split(',') -%}
-#             {%- set deviceConfCln=dict(devicesConf | first) -%}
-#             {{- deviceConfCln.__setitem__('pvname',device | trim) -}}
-#             {{- confs.append(deviceConfCln) -}}
-#           {%- endfor -%}
-#         {%- endif -%}
-#       {%- endfor -%}
-#       {{- output.__setitem__(grouper, confs) -}}      
-#     {%- endfor -%}
-#     {%- if  hostvars[inventory_hostname].ansible_lvm is defined and  hostvars[inventory_hostname].ansible_lvm.pvs is defined -%}
-#       {%- for device, pvs in hostvars[inventory_hostname].ansible_lvm.pvs.iteritems() -%}
-#         {%- if pvs.vg in output and output[pvs.vg] | selectattr('pvname','equalto',device) | list | count == 0 -%}
-#           {{- output[pvs.vg].append({'pvname':device, 'vgname':pvs.vg }) -}}
-#         {%- endif -%}
-#       {%- endfor -%}
-#     {%- endif -%}
-#     {{- output | to_json -}}
-
-
-# - debug: 
-#    var: gluster_volumes_by_groupname_pre
-#   #  var: "{{gluster_volumes_by_groupname_pre}}"
-
-# - debug: 
-#    msg: "KEY: {{ item.key }}, VALUE: {{ item.value | json_query('[].pvname') | unique | join(',') }}"
-#   loop: "{{gluster_volumes_by_groupname_pre | dict2items}}"   
-
-
-# - name: Check if vg block device exists
-#   shell: >
-#    {% for pvsname in item.value | json_query('[].pvname') | unique  %}
-#    test -b {{ pvsname }} && echo "1" || echo  "0";
-#    {% endfor %}
-#   register: vg_device_exists
-#   loop: "{{gluster_volumes_by_groupname_pre | dict2items}}" 
-
-# - debug: 
-#    var: vg_device_exists
-  
-# - name: Record for missing devices for phase 2
-#   set_fact:
-#    gluster_phase2_has_missing_devices: true
-#   loop: "{{ vg_device_exists.results }}"
-#   when: item.stdout_lines is defined and "0" in item.stdout_lines
-
-# - debug: 
-#    var: gluster_phase2_has_missing_devices
-
-# - debug:
-#    var: vg_device_exists.results | json_query('[?item.key==`ans_vg3`] | [0]')
-
-# - name: Filter none-existing devices
-#   set_fact:
-#    gluster_volumes_by_groupname: >-
-#     {%- set output={} -%}
-#     {%- for vgname, devicesConf in gluster_volumes_by_groupname_pre.iteritems() -%}
-#       {%- for item in vg_device_exists.results | json_query('[?item.key==`' ~ vgname ~ '`]') -%}
-#         {%- set confs=[] -%}    
-#         {%- for vgConfig in item.item.value -%}
-#             {%- if item.stdout_lines[loop.index0] == "1" -%}
-#               {%- set vgConfigCln=dict(item.item.value | first) -%}
-#               {{- vgConfigCln.__setitem__('pvname',vgConfig.pvname) -}}
-#               {{- confs.append(vgConfigCln) -}}
-#             {%- endif -%}
-#         {%- endfor -%}
-#         {{- output.__setitem__(vgname, confs) -}}
-#       {% endfor %}
-#     {% endfor %}
-#     {{- output | to_json -}}
-
+     
 
 - include_tasks: get_vg_groupings.yml
   vars: 
    volume_groups: "{{ gluster_infra_volume_groups }}"
   when: gluster_infra_volume_groups is defined and gluster_infra_volume_groups is not none and gluster_infra_volume_groups|length >0 
 
-- debug: 
-   var: gluster_volumes_by_groupname
-
-- debug: 
-   var: vg_device_exists   
-
 - name: Record for missing devices for phase 2
   set_fact:
    gluster_phase2_has_missing_devices: true
   loop: "{{ vg_device_exists.results }}"
   when: item.stdout_lines is defined and "0" in item.stdout_lines
-
-- debug: 
-   var: gluster_phase2_has_missing_devices
-
-
-# - meta: end_play
 
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
@@ -211,8 +72,4 @@
 - name: update LVM fact's
   setup: 
    filter: 'ansible_lvm'
-  when: gluster_changed_vgs.changed 
-
-- debug: 
-   var: hostvars[inventory_hostname].ansible_lvm.pvs
   when: gluster_changed_vgs.changed 

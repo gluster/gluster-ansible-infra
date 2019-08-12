@@ -1,6 +1,4 @@
-
-- debug: 
-   var: volume_groups
+---
 
 - name: Group devices by volume group name, including existing devices
   set_fact:
@@ -35,12 +33,6 @@
    {% endfor %}
   register: vg_device_exists
   loop: "{{gluster_volumes_by_groupname_pre | dict2items}}"
-
-- debug: 
-    var: gluster_volumes_by_groupname_pre
-
-- debug: 
-    var: vg_device_exists
 
 - name: Filter none-existing devices
   set_fact:

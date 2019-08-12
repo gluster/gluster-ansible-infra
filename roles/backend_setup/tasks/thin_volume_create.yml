@@ -59,7 +59,6 @@
      state: present
      vg: "{{ (item.value | first).vgname }}"
      pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
-     #pvs: "{{ (item.pvs|default('')).split(',') | map('trim') | list | union((item.meta_pvs | default('')).split(',') | map('trim') | list) | union(hostvars[inventory_hostname].ansible_lvm.pvs | dict2items | json_query('[?value.vg==`'+item.vgname+'`].key') ) | select | list | unique | join(',') }}"
      pv_options: "--dataalignment 256K"
   loop: "{{ gluster_volumes_by_groupname | dict2items }}"
   loop_control:
@@ -72,8 +71,6 @@
   setup: 
    filter: 'ansible_lvm'
   when: gluster_changed_vgs.changed 
-
-# - meta: end_play
 
 
 - name: Create a LV thinlv-data
