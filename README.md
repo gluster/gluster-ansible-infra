@@ -43,7 +43,7 @@ respective sub-roles directory.
 | gluster_infra_vdo || UNDEF | Mandatory argument if vdo has to be setup. Key/Value pairs have to be given. See examples for syntax. |
 | gluster_infra_disktype | JBOD / RAID6 / RAID10  | UNDEF   | Backend disk type. |
 | gluster_infra_diskcount || UNDEF | RAID diskcount, can be ignored if disktype is JBOD  |
-| gluster_infra_volume_groups  || | Mandatory variable, key/value pairs of vgname and pvname. pvname can be comma-separated values if more than a single pv is needed for a vg. See below for syntax. |
+| gluster_infra_volume_groups  || UNDEF | Key/value pairs of vgname and pvname. pvname can be comma-separated values if more than a single pv is needed for a vg. See below for syntax. This variable is mandatory when PV's are not specified in the LV's |
 | gluster_infra_stripe_unit_size || UNDEF| Stripe unit size (KiB). *DO NOT* including trailing 'k' or 'K'  |
 | gluster_infra_lv_poolmetadatasize || 16G | Metadata size for LV, recommended value 16G is used by default. That value can be overridden by setting the variable. Include the unit [G\|M\|K] |
 | gluster_infra_thinpools || | Thinpool data. This is a dictionary with keys vgname, thinpoolname, thinpoolsize, and poolmetadatasize. See below for syntax and example. |
@@ -194,7 +194,7 @@ gluster_infra_thinpools:
 
 ```
 vgname - The vg which will be extended to setup cache.
-cachedisk - The SSD disk which will be used to setup cache. Complete path, for eg: /dev/sdd
+cachedisk - Comma seperated list of asbsolute-paths of block devices (e.g. SSD, NVMe; /dev/ssd) to use as caching medium.
 cachethinpoolname - (deprecated, see: cachetarget) The existing thinpool on the volume group mentioned above.
 cachetarget - The target thinpool or thick LV that should be cached
 cachelvname - Logical volume name for setting up cache, an lv with this name is created.
