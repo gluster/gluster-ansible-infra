@@ -18,7 +18,7 @@
       {{- output.__setitem__(grouper, confs) -}}      
     {%- endfor -%}
     {%- if  hostvars[inventory_hostname].ansible_lvm is defined and hostvars[inventory_hostname].ansible_lvm.pvs is defined -%}
-      {%- for device, pvs in hostvars[inventory_hostname].ansible_lvm.pvs.iteritems() -%}
+      {%- for device, pvs in hostvars[inventory_hostname].ansible_lvm.pvs.items() -%}
         {%- if pvs.vg in output and output[pvs.vg] | selectattr('pvname','equalto',device) | list | count == 0 -%}
           {{- output[pvs.vg].append({'pvname':device, 'vgname':pvs.vg }) -}}
         {%- endif -%}
@@ -38,7 +38,7 @@
   set_fact:
    gluster_volumes_by_groupname: >-
     {%- set output={} -%}
-    {%- for vgname, devicesConf in gluster_volumes_by_groupname_pre.iteritems() -%}
+    {%- for vgname, devicesConf in gluster_volumes_by_groupname_pre.items() -%}
       {%- for item in vg_device_exists.results | json_query('[?item.key==`' ~ vgname ~ '`]') -%}
         {%- set confs=[] -%}    
         {%- for vgConfig in item.item.value -%}
