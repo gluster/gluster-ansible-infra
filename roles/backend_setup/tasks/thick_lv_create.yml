@@ -63,6 +63,7 @@
     size: "{{ item.size }}"
     pvs: "{{ item.pvs | default() }}"
     opts: "{{ item.opts | default() }}"
+    shrink: "{{ item.shrink | default(true) }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
   loop_control:
    index_var: index

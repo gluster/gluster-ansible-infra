@@ -137,6 +137,7 @@
      thinpool: "{{ item.thinpool }}"
      size: "{{ item.lvsize }}"
      pvs: "{{ item.pvs | default() }}"
+     shrink: "{{ item.shrink | default(true) }}"
      opts: >
       {{ item.opts | default() }}      
   with_items: "{{ gluster_infra_lv_logicalvols }}"
