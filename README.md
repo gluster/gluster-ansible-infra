@@ -134,7 +134,8 @@ gluster_infra_lv_logicalvols:
 * opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
 * meta_pvs: Optional, Default empty, the physical devices the metadata volume should be placed on
 * meta_opts: Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
-* skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
+* skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the 
+* shrink: Optional Boolean, Default yes. When no the lvol module will not try to shrink the LV
 
 -----------------------
 #### Thick LV variable
@@ -159,6 +160,7 @@ gluster_infra_thick_lvs:
 * opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
 * skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
 * atboot: Optional Boolean, Default no. When yes the parameter "rd.lvm.lv=DM" will be added to the kernel parameters in grub
+* shrink: Optional Boolean, Default yes. When no the lvol module will not try to shrink the LV
 
 ----------------------
 #### Thinpool variable
