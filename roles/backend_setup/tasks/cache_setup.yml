@@ -23,9 +23,10 @@
 
 - name: Check if logical volume exists and is backed by the cache pool
   shell: >
-    lvs -a --options 'pool_lv' --noheadings {{ item.vgname }}/{{ item.cachetarget | default(item.cachethinpoolname) }} | grep cache
+    lvs -a --options 'data_lv,pool_lv' --separator "|" --noheadings  {{item.vgname}}/{{item.cachetarget | default(item.cachethinpoolname)}} 2>/dev/null|
+       awk -F '|'   '{ gsub(/^\s*\[/,"",$1);gsub(/\]\|?$/,"",$1);if(length($2)>0){ print "echo "$2}else if(length($1)>0){ print "lvs -a --noheadings --options 'pool_lv' {{item.vgname}}/"$1}}'|
+       bash|sed 's/^ *//;s/$//'
   register: datapoolcache_attrs
-  failed_when: false
   with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Change attributes of LV
@@ -100,7 +101,7 @@
 - name: Convert logical volume to a cache pool LV
   command: >
     lvconvert -y --type cache-pool
-       {% if item.0.cachemetalvname is defined %} 
+       {% if item.0.cachemetalvname is defined %}
         --poolmetadata {{ item.0.vgname }}/{{ item.0.cachemetalvname }}
        {% else %}
        --poolmetadata {{ item.0.vgname }}/{{ item.0.cachelvname }}_meta
