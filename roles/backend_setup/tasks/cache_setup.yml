@@ -7,80 +7,79 @@
 # caching)
 
 - name: Check if cachepool exists
-  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.cachelvname}}| sed 's/^ *//;s/$//'"    
+  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.cachelvname}}| sed 's/^ *//;s/$//'"
   register: checkpool_attrs
   with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Check if cachepool-metadata exists
-  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.cachelvname}}_cmeta| sed 's/^ *//;s/$//'"    
+  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.cachelvname}}_cmeta| sed 's/^ *//;s/$//'"
   register: checkpoolmeta_attrs
-  with_items: "{{ gluster_infra_cache_vars }}"  
+  with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Check if logical data volume
   shell: lvs -a --options 'lv_attr' --noheading {{item.vgname}}/{{ item.cachetarget | default(item.cachethinpoolname) }} | sed 's/^ *//;s/$//'
   register: datapool_attrs
-  with_items: "{{ gluster_infra_cache_vars }}"  
+  with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Check if logical volume exists and is backed by the cache pool
   shell: >
-      lvs -a --options 'data_lv,pool_lv' --separator "|" --noheadings  {{item.vgname}}/{{item.cachetarget | default(item.cachethinpoolname)}} 2>/dev/null| 
-         awk -F '|'   '{ gsub(/^\s*\[/,"",$1);gsub(/\]\|?$/,"",$1);if(length($2)>0){ print "echo "$2}else if(length($1)>0){ print "lvs -a --noheadings --options 'pool_lv' {{item.vgname}}/"$1}}'|
-         bash|sed 's/^ *//;s/$//'
+    lvs -a --options 'pool_lv' --noheadings {{ item.vgname }}/{{ item.cachetarget | default(item.cachethinpoolname) }} | grep cache
   register: datapoolcache_attrs
-  with_items: "{{ gluster_infra_cache_vars }}"  
+  failed_when: false
+  with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Change attributes of LV
   lvol:
-     state: present
-     vg: "{{ item.0.vgname }}"
-     thinpool: "{{ item.0.cachetarget | default(item.0.cachethinpoolname) }}"
-     opts: " --zero n "
+    state: present
+    vg: "{{ item.0.vgname }}"
+    thinpool: "{{ item.0.cachetarget | default(item.0.cachethinpoolname) }}"
+    opts: " --zero n "
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapool_attrs is not none and datapool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout is defined and item.1.stdout|length>0
 
 - include_tasks: get_vg_groupings.yml
-  vars: 
-   volume_groups: >-
+  vars:
+    volume_groups: >-
       {%- set output=[] -%}
       {%- for cnf in gluster_infra_cache_vars -%}
-      {%- if cnf is defined and cnf is not none and cnf.vgname is defined            
+      {%- if cnf is defined and cnf is not none and cnf.vgname is defined
             and (cnf.cachedisk is defined or cnf.meta_pvs is defined)
       -%}
       {{- output.append({"vgname": cnf.vgname, "pvname": (cnf.cachedisk|default('') ~ ',' ~ (cnf.meta_pvs|default(''))).split(',') | select | list | unique | join(',')}) -}}
       {%- endif -%}
       {%- endfor -%}
       {{- output | to_json -}}
-  when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none and gluster_infra_cache_vars|length >0    
+  when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none and gluster_infra_cache_vars|length >0
 
 - name: Make sure meta and cache pv's exists in volume group
   register: gluster_changed_vgs
   lvg:
-     state: present
-     vg: "{{ (item.value | first).vgname }}"
-     pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
-     pv_options: "--dataalignment 256K"  
+    state: present
+    vg: "{{ (item.value | first).vgname }}"
+    pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
+    pv_options: "--dataalignment 256K"
   loop: "{{ gluster_volumes_by_groupname | dict2items }}"
   loop_control:
-   index_var: index
-  when: > 
-   gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
-   and item.value|length>0
+    index_var: index
+  when: >
+    gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0
+    and item.value|length>0
 
 - name: update LVM fact's
-  setup: 
-   filter: 'ansible_lvm'
-  when: gluster_changed_vgs.changed 
+  setup:
+    filter: 'ansible_lvm'
+  when: gluster_changed_vgs.changed
 
 - name: Create LV for cache
   lvol:
-     state: present
-     shrink: false
-     vg: "{{ item.0.vgname }}"
-     lv: "{{ item.0.cachelvname }}"
-     size: "{{ item.0.cachelvsize }}"
-     pvs: "{{ item.0.cachedisk | default('') }}"
-     opts: "{{ item.0.opts | default('') }}"
-  #errors throw when trying to modify an existing cachepool attached to a LV   
+    state: present
+    shrink: false
+    vg: "{{ item.0.vgname }}"
+    lv: "{{ item.0.cachelvname }}"
+    size: "{{ item.0.cachelvsize }}"
+    pvs: "{{ item.0.cachedisk | default('') }}"
+    opts: "{{ item.0.opts | default('') }}"
+  #errors throw when trying to modify an existing cachepool attached to a LV
   #Operation not permitted on hidden LV ans_vg/cache-ans_thinpool2.
   #Sorry, no shrinking of cache-ans_thinpool3 without force=yes.
   when: item.1.stdout.find('C') != 0
@@ -88,37 +87,38 @@
 
 - name: Create metadata LV for cache
   lvol:
-     state: present
-     vg: "{{ item.0.vgname }}"
-     lv: "{{ item.0.cachemetalvname | default(item.0.cachelvname ~ '_meta') }}"
-     size: "{{ item.0.cachemetalvsize }}"
-     pvs: "{{ ((item.0.meta_pvs is defined and item.0.meta_pvs) or item.0.cachedisk) | default('') }}"
-     opts: "{{ ((item.0.meta_opts is defined and item.0.meta_opts) or item.0.opts) | default('') }}"
+    state: present
+    vg: "{{ item.0.vgname }}"
+    lv: "{{ item.0.cachemetalvname | default(item.0.cachelvname ~ '_meta') }}"
+    size: "{{ item.0.cachemetalvsize }}"
+    pvs: "{{ ((item.0.meta_pvs is defined and item.0.meta_pvs) or item.0.cachedisk) | default('') }}"
+    opts: "{{ ((item.0.meta_opts is defined and item.0.meta_opts) or item.0.opts) | default('') }}"
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
   when: item.1.stdout is not defined or item.1.stdout.find('e') != 0
-
 
 #Command on LV ans_vg/cache-ans_thinpool2 does not accept LV type cachepool
 - name: Convert logical volume to a cache pool LV
   command: >
-     lvconvert -y --type cache-pool 
-        {% if item.0.cachemetalvname is defined %} 
-         --poolmetadata {{ item.0.cachemetalvname }} 
-        {% endif %}
-        --poolmetadataspare n
-        --cachemode {{item.0.cachemode | default('writethrough')}}
-        "/dev/{{item.0.vgname}}/{{item.0.cachelvname}}"
+    lvconvert -y --type cache-pool
+       {% if item.0.cachemetalvname is defined %} 
+        --poolmetadata {{ item.0.vgname }}/{{ item.0.cachemetalvname }}
+       {% else %}
+       --poolmetadata {{ item.0.vgname }}/{{ item.0.cachelvname }}_meta
+       {% endif %}
+       --poolmetadataspare n
+       --cachemode {{item.0.cachemode | default('writethrough')}}
+       "{{item.0.vgname}}/{{item.0.cachelvname}}"
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
   when: item.1.stdout.find('C') != 0
 
 # Run lvs -a -o +devices to see the cache settings
 - name: Convert an existing logical volume to a cache LV
   command: >
-     lvconvert -y --type cache --cachepool "/dev/{{item.0.vgname}}/{{item.0.cachelvname}}"
-     "/dev/{{item.0.vgname}}/{{item.0.cachetarget | default(item.0.cachethinpoolname)}}"
+    lvconvert -y --type cache --cachepool {{ item.0.vgname }}/{{ item.0.cachelvname }}
+    {{ item.0.vgname }}/{{ item.0.cachetarget | default(item.0.cachethinpoolname) }}
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((datapoolcache_attrs is not none and datapoolcache_attrs.results) or default([]))) | list }}"
   loop_control:
-   index_var: index
+    index_var: index
   #check if the LV exists and is not yet converted to a cache volume 
   when: datapool_attrs.results[index].stdout is defined and datapool_attrs.results[index].stdout|length>0 and item.1.stdout.find(item.0.cachelvname) == -1
 
