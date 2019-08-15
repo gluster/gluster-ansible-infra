@@ -27,7 +27,7 @@
    {% endif %}
   register: lvt_device_exists
   with_items: "{{ gluster_infra_lv_logicalvols }}"
-  when: item is not none
+  when: gluster_infra_lv_logicalvols is defined and item is not none
 
 # We support only XFS. Filesysem options sw, su are specific to XFS
 - name: Create filesystem on thin logical vols
@@ -55,7 +55,7 @@
    {% endif %}
   register: lv_device_exists
   with_items: "{{ gluster_infra_thick_lvs }}"  
-  when: item is not none
+  when: gluster_infra_thick_lvs is defined and item is not none
 
 - name: Create filesystem on thick logical vols
   filesystem:

@@ -40,7 +40,6 @@
      gluster_infra_disktype == 'RAID6' or
      gluster_infra_disktype == 'RAID10' or
      gluster_infra_disktype == 'RAID5'
-     
 
 - include_tasks: get_vg_groupings.yml
   vars: 
@@ -66,8 +65,8 @@
     pv_options: "--dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }}"
     # pesize is 4m by default for JBODs
     pesize: "{{ vg_pesize | default(4) }}"
-  loop: "{{gluster_volumes_by_groupname | dict2items}}"
-  when: item.value|length>0
+  loop: "{{gluster_volumes_by_groupname | default({}) | dict2items}}"
+  when: gluster_volumes_by_groupname is defined and item.value|length>0
   
 - name: update LVM fact's
   setup: 

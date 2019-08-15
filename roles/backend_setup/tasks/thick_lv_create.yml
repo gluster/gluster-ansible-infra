@@ -60,10 +60,10 @@
     state: present
     vg: "{{ item.vgname }}"
     lv: "{{ item.lvname }}"
-    size: "{{ item.size }}"
+    size: "{{ item.size | default('100%FREE') }}"
     pvs: "{{ item.pvs | default() }}"
     opts: "{{ item.opts | default() }}"
-    shrink: "{{ item.shrink | default(true) }}"
+    shrink: "{{ item.shrink if item.shrink is defined and item.shrink is not none else true }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
   loop_control:
    index_var: index
