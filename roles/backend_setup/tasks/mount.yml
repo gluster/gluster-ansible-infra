@@ -30,6 +30,7 @@
   no_log: true
 
 - name: Mount the vdo devices (If any)
+  register: lvmount_vdo
   mount:
      path: "{{ item.path }}"
      state: mounted
@@ -40,6 +41,7 @@
   when: vdo_devs|length > 0 and item.vgname in vdo_devs
 
 - name: Mount the devices
+  register: lvmount
   mount:
      path: "{{ item.path }}"
      state: mounted
@@ -48,6 +50,11 @@
      src: "{{ item.uuid }}"
   with_items: "{{ mount_devices_with_uuid }}"
   when: item.vgname not in vdo_devs
+
+- name: update mount fact's
+  setup: 
+   filter: 'ansible_mounts'
+  when: lvmount.changed or lvmount_vdo.changed
 
 - name: Set Gluster specific SeLinux context on the bricks
   sefcontext:
