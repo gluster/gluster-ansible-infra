@@ -16,7 +16,7 @@
   register: checkpoolmeta_attrs
   with_items: "{{ gluster_infra_cache_vars }}"
 
-- name: Check if logical data volume
+- name: Check if logical data volume exists
   shell: lvs -a --options 'lv_attr' --noheading {{item.vgname}}/{{ item.cachetarget | default(item.cachethinpoolname) }} | sed 's/^ *//;s/$//'
   register: datapool_attrs
   with_items: "{{ gluster_infra_cache_vars }}"
@@ -71,6 +71,18 @@
     filter: 'ansible_lvm'
   when: gluster_changed_vgs.changed
 
+
+- name: Create metadata LV for cache
+  lvol:
+    state: present
+    vg: "{{ item.0.vgname }}"
+    lv: "{{ item.0.cachemetalvname | default(item.0.cachelvname ~ '_meta') }}"
+    size: "{{ item.0.cachemetalvsize }}"
+    pvs: "{{ ((item.0.meta_pvs is defined and item.0.meta_pvs) or item.0.cachedisk) | default('') }}"
+    opts: "{{ ((item.0.meta_opts is defined and item.0.meta_opts) or item.0.opts) | default('') }}"
+  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
+  when: item.1.stdout is not defined or item.1.stdout.find('e') != 0  
+
 - name: Create LV for cache
   lvol:
     state: present
@@ -85,17 +97,6 @@
   #Sorry, no shrinking of cache-ans_thinpool3 without force=yes.
   when: item.1.stdout.find('C') != 0
   loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpool_attrs is not none and checkpool_attrs.results) or default([]))) | list }}"
-
-- name: Create metadata LV for cache
-  lvol:
-    state: present
-    vg: "{{ item.0.vgname }}"
-    lv: "{{ item.0.cachemetalvname | default(item.0.cachelvname ~ '_meta') }}"
-    size: "{{ item.0.cachemetalvsize }}"
-    pvs: "{{ ((item.0.meta_pvs is defined and item.0.meta_pvs) or item.0.cachedisk) | default('') }}"
-    opts: "{{ ((item.0.meta_opts is defined and item.0.meta_opts) or item.0.opts) | default('') }}"
-  loop: "{{ ((gluster_infra_cache_vars is not none and gluster_infra_cache_vars) or default([])) | zip(((checkpoolmeta_attrs is not none and checkpoolmeta_attrs.results) or default([])))| list }}"
-  when: item.1.stdout is not defined or item.1.stdout.find('e') != 0
 
 #Command on LV ans_vg/cache-ans_thinpool2 does not accept LV type cachepool
 - name: Convert logical volume to a cache pool LV
