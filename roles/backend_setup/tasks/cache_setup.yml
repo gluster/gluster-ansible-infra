@@ -52,7 +52,7 @@
       {{- output | to_json -}}
   when: gluster_infra_cache_vars is defined and gluster_infra_cache_vars is not none and gluster_infra_cache_vars|length >0
 
-- name: Make sure meta and cache pv's exists in volume group
+- name: Make sure meta and cache pvs exists in volume group
   register: gluster_changed_vgs
   lvg:
     state: present

@@ -34,7 +34,7 @@
       {{- output | to_json -}}
   when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs|length >0 
 
-- name: Make sure thick pv's exists in volume group
+- name: Make sure thick pvs exists in volume group
   register: gluster_changed_vgs
   lvg:
      state: present

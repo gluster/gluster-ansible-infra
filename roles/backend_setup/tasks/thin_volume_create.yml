@@ -53,7 +53,7 @@
   when: gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 
 
 
-- name: Make sure meta and thin pv's exists in volume group
+- name: Make sure meta and thin pvs exists in volume group
   register: gluster_changed_vgs
   lvg:
      state: present

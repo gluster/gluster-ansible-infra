@@ -75,7 +75,7 @@
 # block of tasks, which is executed when there are valid pools and pool items are configured.
 # also it checks if the pool doesn't already exists
 
-- name: Make sure meta and pool pv's exists in volume group
+- name: Make sure meta and pool pvs exists in volume group
   register: gluster_changed_vgs
   lvg:
      state: present
