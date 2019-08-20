@@ -41,31 +41,34 @@
      gluster_infra_disktype == 'RAID10' or
      gluster_infra_disktype == 'RAID5'
 
-- name: Check if vg block device exists
-  shell: test -b {{ item.pvname }} && echo "1" || echo  "0"
-  register: vg_device_exists
-  with_items: "{{ gluster_infra_volume_groups }}"
-  when: item.pvname is defined
-  
+- include_tasks: get_vg_groupings.yml
+  vars: 
+   volume_groups: "{{ gluster_infra_volume_groups }}"
+  when: gluster_infra_volume_groups is defined and gluster_infra_volume_groups is not none and gluster_infra_volume_groups|length >0 
+
 - name: Record for missing devices for phase 2
   set_fact:
    gluster_phase2_has_missing_devices: true
   loop: "{{ vg_device_exists.results }}"
-  when: item.stdout is defined and item.stdout == "0"
-
+  when: item.stdout_lines is defined and "0" in item.stdout_lines
 
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
+# Please take note; only the first item per volume group will define the actual configuraton!
+#TODO: fix pesize // {{ ((item.value | first).vg_pesize || vg_pesize) | default(4) }}
 - name: Create volume groups
+  register: gluster_changed_vgs
   lvg:
     state: present
-    vg: "{{ item.vgname }}"
-    pvs: "{{ item.pvname }}"
-    pv_options: "--dataalignment {{ pv_dataalign }}"
+    vg: "{{ (item.value | first).vgname }}"
+    pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
+    pv_options: "--dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }}"
     # pesize is 4m by default for JBODs
     pesize: "{{ vg_pesize | default(4) }}"
-  with_items: "{{ gluster_infra_volume_groups }}"
-  loop_control:
-   index_var: index
-  when: item.pvname is defined and vg_device_exists.results[index].stdout is defined and vg_device_exists.results[index].stdout == "1"
-
+  loop: "{{gluster_volumes_by_groupname | default({}) | dict2items}}"
+  when: gluster_volumes_by_groupname is defined and item.value|length>0
+  
+- name: update LVM fact's
+  setup: 
+   filter: 'ansible_lvm'
+  when: gluster_changed_vgs.changed 

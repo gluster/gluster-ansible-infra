@@ -20,15 +20,50 @@
   when: item.stdout_lines is defined and "0" in item.stdout_lines    
 
 
+- include_tasks: get_vg_groupings.yml
+  vars: 
+   volume_groups: >-
+      {%- set output=[] -%}
+      {%- for cnf in gluster_infra_thick_lvs -%}
+      {%- if cnf is defined and cnf is not none and cnf.vgname is defined
+            and (cnf.pvs is defined)
+      -%}
+      {{- output.append({"vgname": cnf.vgname, "pvname": (cnf.pvs|default('')).split(',') | select | list | unique | join(',')}) -}}
+      {%- endif -%}
+      {%- endfor -%}
+      {{- output | to_json -}}
+  when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs|length >0 
+
+- name: Make sure thick pvs exists in volume group
+  register: gluster_changed_vgs
+  lvg:
+     state: present
+     vg: "{{ (item.value | first).vgname }}"
+     pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
+     pv_options: "--dataalignment 256K"
+  loop: "{{ gluster_volumes_by_groupname | dict2items }}"
+  loop_control:
+   index_var: index
+  when: > 
+   gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
+   and item.value|length>0  
+
+- name: update LVM fact's
+  setup: 
+   filter: 'ansible_lvm'
+  when: gluster_changed_vgs.changed    
+
+
 # Create a thick logical volume.
 - name: Create thick logical volume
   lvol:
     state: present
     vg: "{{ item.vgname }}"
     lv: "{{ item.lvname }}"
-    size: "{{ item.size }}"
+    size: "{{ item.size | default('100%FREE') }}"
     pvs: "{{ item.pvs | default() }}"
     opts: "{{ item.opts | default() }}"
+    shrink: "{{ item.shrink if item.shrink is defined and item.shrink is not none else true }}"
   with_items: "{{ gluster_infra_thick_lvs }}"
   loop_control:
    index_var: index

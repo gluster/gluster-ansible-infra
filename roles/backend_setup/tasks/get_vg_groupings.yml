@@ -1,0 +1,54 @@
+---
+
+- name: Group devices by volume group name, including existing devices
+  set_fact:
+   gluster_volumes_by_groupname_pre: >-
+    {%- set output={} -%}
+    {%- for grouper, devicesConf in volume_groups | groupby('vgname') -%}
+      {%- set confs=[] -%}    
+      {%- for deviceConf in devicesConf -%}
+        {%- if deviceConf.pvname is defined -%}
+          {%- for device in deviceConf.pvname.split(',') -%}
+            {%- set deviceConfCln=dict(devicesConf | first) -%}
+            {{- deviceConfCln.__setitem__('pvname',device | trim) -}}
+            {{- confs.append(deviceConfCln) -}}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- output.__setitem__(grouper, confs) -}}      
+    {%- endfor -%}
+    {%- if  hostvars[inventory_hostname].ansible_lvm is defined and hostvars[inventory_hostname].ansible_lvm.pvs is defined -%}
+      {%- for device, pvs in hostvars[inventory_hostname].ansible_lvm.pvs.items() -%}
+        {%- if pvs.vg in output and output[pvs.vg] | selectattr('pvname','equalto',device) | list | count == 0 -%}
+          {{- output[pvs.vg].append({'pvname':device, 'vgname':pvs.vg }) -}}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {{- output | to_json -}}    
+
+- name: Check if vg block device exists
+  shell: >
+   {% for pvsname in item.value | json_query('[].pvname')  %}
+   test -b {{ pvsname }} && echo "1" || echo  "0";
+   {% endfor %}
+  register: vg_device_exists
+  loop: "{{gluster_volumes_by_groupname_pre | dict2items}}"
+
+- name: Filter none-existing devices
+  set_fact:
+   gluster_volumes_by_groupname: >-
+    {%- set output={} -%}
+    {%- for vgname, devicesConf in gluster_volumes_by_groupname_pre.items() -%}
+      {%- for item in vg_device_exists.results | json_query('[?item.key==`' ~ vgname ~ '`]') -%}
+        {%- set confs=[] -%}    
+        {%- for vgConfig in item.item.value -%}
+            {%- if item.stdout_lines[loop.index0] == "1" -%}
+              {%- set vgConfigCln=dict(item.item.value | first) -%}
+              {{- vgConfigCln.__setitem__('pvname',vgConfig.pvname) -}}
+              {{- confs.append(vgConfigCln) -}}
+            {%- endif -%}
+        {%- endfor -%}
+        {{- output.__setitem__(vgname, confs) -}}
+      {%- endfor -%}
+    {%- endfor -%}
+    {{- output | to_json -}}
