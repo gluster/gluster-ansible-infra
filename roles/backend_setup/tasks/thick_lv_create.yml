@@ -34,30 +34,6 @@
       {{- output | to_json -}}
   when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs|length >0 
 
-# - debug:
-#    var: gluster_volumes_by_groupname
-
-# - debug:
-#    msg: >- 
-#     {% if (item.value | first).raid is defined and (item.value | first).raid is not none 
-#       and (item.value | first).raid.level is defined and (item.value | first).raid.devices is defined and (item.value | first).raid.stripe is defined 
-#       and (item.value | first).raid.level in [0,5,6,10]%}
-#     {% if (item.value | first).raid.level == 0 %}
-#     {{ "--dataalignment " ~ ((item.value | first).raid.devices|int * (item.value | first).raid.stripe|int)|int ~ "K"}}  
-#     {% elif (item.value | first).raid.level == 5 %}
-#     {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-1) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
-#     {% elif (item.value | first).raid.level == 6 %}
-#     {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-2) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
-#     {% elif (item.value | first).raid.level == 10 %}
-#     {{ "--dataalignment " ~ (((item.value | first).raid.devices|int/2) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
-#     {% endif %}    
-#     {% else %}
-#     {{ "--dataalignment 256K" }}
-#     {% endif %}
-#   loop: "{{ gluster_volumes_by_groupname | dict2items }}" 
-
-
-
 - name: Make sure thick pvs exists in volume group
   register: gluster_changed_vgs
   lvg:
@@ -103,8 +79,6 @@
   when: > 
    gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
    and item  is defined and item.value is defined and item.value|length>0  
-
-# - meta: end_play
 
 - name: update LVM fact's
   setup: 
