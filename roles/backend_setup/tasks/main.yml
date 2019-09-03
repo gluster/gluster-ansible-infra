@@ -44,6 +44,7 @@
 
 # Get the list of volume groups created on vdo disks
 # This is a bit hacky, we rely on pvname to get vdo disks
+# TODO: dynamically add VG's here
 - name: Record VDO devices (if any)
   set_fact:
      vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
