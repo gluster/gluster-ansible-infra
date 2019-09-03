@@ -38,7 +38,7 @@
      opts: "inode64,noatime,nodiratime{{ vdo_opts|default('')}}"
      src: "{{ item.uuid }}"
   with_items: "{{ mount_devices_with_uuid }}"
-  when: vdo_devs|length > 0 and item.vgname in vdo_devs
+  when: vdo_devs is defined and vdo_devs|length > 0 and item.vgname in vdo_devs
 
 - name: Mount the devices
   register: lvmount
@@ -49,7 +49,7 @@
      opts: "inode64,noatime,nodiratime"
      src: "{{ item.uuid }}"
   with_items: "{{ mount_devices_with_uuid }}"
-  when: item.vgname not in vdo_devs
+  when: vdo_devs is not defined or (vdo_devs is defined and item.vgname not in vdo_devs)
 
 - name: update mount fact's
   setup: 
