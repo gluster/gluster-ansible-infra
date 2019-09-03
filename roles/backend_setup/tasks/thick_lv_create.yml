@@ -97,12 +97,12 @@
          {%- else -%}
          {{- 4 -}}
          {%- endif -%}
-  loop: "{{ gluster_volumes_by_groupname | dict2items }}"
+  loop: "{{ gluster_volumes_by_groupname | dict2items if gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none else [] }}"
   loop_control:
    index_var: index
   when: > 
    gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
-   and item.value|length>0  
+   and item  is defined and item.value is defined and item.value|length>0  
 
 # - meta: end_play
 
