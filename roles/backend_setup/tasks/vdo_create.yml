@@ -14,12 +14,6 @@
   loop: "{{ vdo_device_exists.results }}"
   when: item.stdout is defined and item.stdout == "0"
 
-<<<<<<< HEAD
-=======
-# - debug: 
-#    var: gluster_infra_vdo
-
->>>>>>> 0f802f8050d06b449e421a7d87d585abdc50126e
 - name: "set fact if it will at least install 1 vdo device"
   set_fact:
    gluster_infra_vdo_will_create_vdo: true
@@ -29,14 +23,6 @@
   when: (gluster_infra_vdo is defined and gluster_infra_vdo is not none and gluster_infra_vdo|length>0 and item is defined and item is not none)
         and item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
 
-<<<<<<< HEAD
-=======
-# - debug:
-#    var: gluster_infra_vdo_will_create_vdo
-
-# - meta: end_play
-
->>>>>>> 0f802f8050d06b449e421a7d87d585abdc50126e
 - name: Install VDO dependencies
   #maybe use package module?
   yum:
