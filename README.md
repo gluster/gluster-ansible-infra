@@ -110,7 +110,7 @@ gluster_infra_volume_groups:
 ```
 
 * vgname: Required, string defining the VG name to belong to
-* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled corectly in simple cases
+* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled correctly in simple cases
 -----------------------
 #### Logical Volume variable
 
@@ -281,7 +281,7 @@ fstrim_service: {
 
 * enabled: Boolean default no. When yes the fstrim.timer unit will be enabled
 * schedule: Optional dictionary, to set the timer, by default doesn't override the schedule. can be usefull to not trigger the trim at the same time across the cluster. optionable subkeys;
-   * dow: Optional String, specifying the Dow of Week as required by the systemd calander. When empty a random day is chosen.
+   * dow: Optional String, specifying the Day of Week as required by the systemd calander. When empty a random day is chosen.
    * hour: Optional int, default a random hour, setting the hour the fstrim should run
    * minute: Optional int, default a random minute, setting the minute the fstrim should run
    * second: Optional int, default a random second, setting the second the fstrim should run
