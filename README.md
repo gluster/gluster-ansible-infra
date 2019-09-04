@@ -110,7 +110,7 @@ gluster_infra_volume_groups:
 ```
 
 * vgname: Required, string defining the VG name to belong to
-* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled corectly in simple cases
+* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled correctly in simple cases
 -----------------------
 #### Logical Volume variable
 
