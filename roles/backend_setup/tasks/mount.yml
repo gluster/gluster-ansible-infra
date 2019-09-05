@@ -58,7 +58,7 @@
 
 - name: Set Gluster specific SeLinux context on the bricks
   sefcontext:
-     target: "{{ item.path }}"
+     target: "{{ (item.path | realpath | regex_escape()) + '(/.*)?' }}"
      setype: glusterd_brick_t
      state: present
   with_items: "{{ gluster_infra_mount_devices }}"
