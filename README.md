@@ -110,7 +110,7 @@ gluster_infra_volume_groups:
 ```
 
 * vgname: Required, string defining the VG name to belong to
-* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled corectly in simple cases
+* pvname: Required, string defining the device paths to pass to the lvg module. Currently the behavior of passing multiple devices is undefined, but should be handled correctly in simple cases
 -----------------------
 #### Logical Volume variable
 
@@ -124,6 +124,7 @@ gluster_infra_lv_logicalvols:
    - { vgname: 'vg_vdb', thinpool: 'foo_thinpool', lvname: 'vg_vdb_thinlv', lvsize: '500G' }
    - { vgname: 'vg_vdc', thinpool: 'bar_thinpool', lvname: 'vg_vdc_thinlv', lvsize: '500G' }
    - { vgname: 'ans_vg', thinpool: 'ans_thinpool4', lvname: 'ans_thinlv5', lvsize: '1G', pvs: '/dev/sdd1,/dev/sdg1', opts: '--type raid1', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdf1' }
+   - { vgname: 'ans_vg3', thinpool: 'ans_thinpool8', lvname: 'ans_thinlv3', lvsize: '100M', raid: {level: 5, stripe: 64, devices: 3 }}
 ```
 
 * vgname: Required, string defining the VG name to belong to
@@ -136,6 +137,7 @@ gluster_infra_lv_logicalvols:
 * meta_opts: Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
 * skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the 
 * shrink: Optional Boolean, Default yes. When no the lvol module will not try to shrink the LV
+* raid: Optional Dict, see _raid_. This should be equal to the raid config of the thinpool! example: {level: 5, stripe: 64, devices: 3 }
 
 -----------------------
 #### Thick LV variable
@@ -161,6 +163,7 @@ gluster_infra_thick_lvs:
 * skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
 * atboot: Optional Boolean, Default no. When yes the parameter "rd.lvm.lv=DM" will be added to the kernel parameters in grub
 * shrink: Optional Boolean, Default yes. When no the lvol module will not try to shrink the LV
+* raid: Optional Dict, see _raid_. example: {level: 5, stripe: 512, devices: 4 }
 
 ----------------------
 #### Thinpool variable
@@ -175,6 +178,7 @@ gluster_infra_thinpools:
   - {vgname: 'vg_vdb', thinpoolname: 'foo_thinpool', thinpoolsize: '10G', poolmetadatasize: '1G' }
   - {vgname: 'vg_vdc', thinpoolname: 'bar_thinpool', thinpoolsize: '20G', poolmetadatasize: '1G' }
   - {vgname: 'ans_vg', thinpoolname: 'ans_thinpool', thinpoolsize: '1G', poolmetadatasize: '15M', opts: "", pvs: '/dev/sdd1,/dev/sdg1', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdf1' }
+  - {vgname: 'ans_vg3', thinpoolname: 'ans_thinpool8', thinpoolsize: '1G', poolmetadatasize: '15M', opts: "--type raid5 --nosync -i 2", pvs: '/dev/sdb1,/dev/sdd1,/dev/sdg1', raid: {level: 5, stripe: 64, devices: 3 }}
 ```
 
 * poolmetadatasize: Metadata size for LV, recommended value 16G is used by default. That value can be overridden by setting the variable. Include the unit [G\|M\|K]
@@ -185,6 +189,7 @@ gluster_infra_thinpools:
 * opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
 * meta_pvs: Optional, Default empty, the physical devices the metadata volume should be placed on
 * meta_opts: Optional, Default empty, additional parameters to pass to lvcreate for creating the metadata volume
+* raid: Optional Dict, see _raid_. example: {level: 5, stripe: 64, devices: 3 }
 
 
 -----------------------------------------
@@ -213,6 +218,18 @@ For example:
    - { vgname: 'vg_vdb', cachedisk: '/dev/vdd', cachethinpoolname: 'foo_thinpool', cachelvname: 'cachelv', cachelvsize: '20G', cachemetalvname: 'cachemeta', cachemetalvsize: '100M', cachemode: 'writethrough' }
    - { vgname: 'ans_vg', cachedisk: '/dev/sde1,/dev/sdf1', cachetarget: 'ans_thick', cachelvname: 'cache-ans_thinpool', cachelvsize: '10G', cachemetalvsize: '1G', meta_opts: '--type raid1', meta_pvs: '/dev/sde1,/dev/sdh1', cachemode: 'writethrough' }
 ```
+
+
+-----------------------------------------
+#### Variables for raid configurations
+
+this is a sub-structure for Thick/Thin, Pool LV's and XFS trying to achieve RAID alignment
+
+| Name                     |Choices| Default value         | Comments                          |
+|--------------------------|-------|-----------------------|-----------------------------------|
+| level | 0,5,6,10 | UNDEF | The active raid level, when none defined the default or JBOD is assumed |
+| stripe || UNDEF | Stripe unit size (KiB). *DO NOT* including trailing 'k' or 'K' |
+| devices || UNDEF | The amount of devices the array consists of, this includes parity devices, thus for a RAID5 of 3 disks supply 3. The parity is calculated |
 
 -----------------------------------------
 #### Variables for mounting the filesystem
@@ -264,7 +281,7 @@ fstrim_service: {
 
 * enabled: Boolean default no. When yes the fstrim.timer unit will be enabled
 * schedule: Optional dictionary, to set the timer, by default doesn't override the schedule. can be usefull to not trigger the trim at the same time across the cluster. optionable subkeys;
-   * dow: Optional String, specifying the Dow of Week as required by the systemd calander. When empty a random day is chosen.
+   * dow: Optional String, specifying the Day of Week as required by the systemd calander. When empty a random day is chosen.
    * hour: Optional int, default a random hour, setting the hour the fstrim should run
    * minute: Optional int, default a random minute, setting the minute the fstrim should run
    * second: Optional int, default a random second, setting the second the fstrim should run

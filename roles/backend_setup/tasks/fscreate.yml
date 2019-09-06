@@ -34,7 +34,24 @@
   filesystem:
      fstype: xfs
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
-     opts: "{{ fs_options }} {{ raid_options | default('') }}"
+     opts: >-
+      {{- fs_options -}}
+      {{- raid_options | default('') -}}
+      {% if raid_options is not defined 
+           and item.raid is defined and item.raid is not none 
+           and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined 
+           and item.raid.level in [0,5,6,10]%}
+      {% if item.raid.level == 0 %}
+      {{ "-d sw=" ~ (item.raid.devices|int)|int}}  
+      {% elif item.raid.level == 5 %}
+      {{ "-d sw=" ~ (item.raid.devices|int-1)|int }}  
+      {% elif item.raid.level == 6 %}
+      {{ "-d sw=" ~ (item.raid.devices|int-2)|int }}  
+      {% elif item.raid.level == 10 %}
+      {{ "-d sw=" ~ (item.raid.devices|int/2)|int}}  
+      {% endif %}
+      {{ " -d su=" ~ (item.raid.stripe|int) ~ "k" }}  
+      {% endif %}
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ (gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols) or [] }}"
   loop_control:
@@ -61,7 +78,24 @@
   filesystem:
      fstype: xfs
      dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
-     opts: "{{ fs_options }} {{ raid_options | default('') }}"
+     opts: >-
+      {{- fs_options -}}
+      {{- raid_options | default('') -}}
+      {% if raid_options is not defined 
+           and item.raid is defined and item.raid is not none 
+           and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined 
+           and item.raid.level in [0,5,6,10]%}
+      {% if item.raid.level == 0 %}
+      {{ "-d sw=" ~ (item.raid.devices|int)|int}}  
+      {% elif item.raid.level == 5 %}
+      {{ "-d sw=" ~ (item.raid.devices|int-1)|int }}  
+      {% elif item.raid.level == 6 %}
+      {{ "-d sw=" ~ (item.raid.devices|int-2)|int }}  
+      {% elif item.raid.level == 10 %}
+      {{ "-d sw=" ~ (item.raid.devices|int/2)|int}}  
+      {% endif %}
+      {{ " -d su=" ~ (item.raid.stripe|int) ~ "k" }}  
+      {% endif %}
      force: "{{ gluster_infra_fs_force | default('no') }}"
   with_items: "{{ (gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs) or [] }}"
   loop_control:

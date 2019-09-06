@@ -34,6 +34,7 @@
   register: vg_device_exists
   loop: "{{gluster_volumes_by_groupname_pre | dict2items}}"
 
+
 - name: Filter none-existing devices
   set_fact:
    gluster_volumes_by_groupname: >-
@@ -42,7 +43,7 @@
       {%- for item in vg_device_exists.results | json_query('[?item.key==`' ~ vgname ~ '`]') -%}
         {%- set confs=[] -%}    
         {%- for vgConfig in item.item.value -%}
-            {%- if item.stdout_lines[loop.index0] == "1" -%}
+            {%- if item.stdout_lines is defined and item.stdout_lines[loop.index0] == "1" -%}
               {%- set vgConfigCln=dict(item.item.value | first) -%}
               {{- vgConfigCln.__setitem__('pvname',vgConfig.pvname) -}}
               {{- confs.append(vgConfigCln) -}}

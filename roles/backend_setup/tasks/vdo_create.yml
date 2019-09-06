@@ -17,10 +17,11 @@
 - name: "set fact if it will at least install 1 vdo device"
   set_fact:
    gluster_infra_vdo_will_create_vdo: true
-  loop: "{{ gluster_infra_vdo }}"
+  loop: "{{ gluster_infra_vdo if gluster_infra_vdo is defined and gluster_infra_vdo is not none and gluster_infra_vdo|length>0 else [] }}"
   loop_control:
    index_var: index
-  when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
+  when: (gluster_infra_vdo is defined and gluster_infra_vdo is not none and gluster_infra_vdo|length>0 and item is defined and item is not none)
+        and item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
 
 - name: Install VDO dependencies
   #maybe use package module?
