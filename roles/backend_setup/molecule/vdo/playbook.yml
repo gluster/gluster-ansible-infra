@@ -1,0 +1,39 @@
+---
+- name: Converge
+  hosts: all
+  roles:
+    - role: backend_setup
+      vars:
+        # Set a disk type. Options: JBOD, RAID6, RAID10 - Default: JBOD
+        gluster_infra_disktype: RAID10
+        gluster_infra_dalign: 256K
+        gluster_infra_diskcount: 10
+        gluster_infra_stripe_unit_size: 128
+        gluster_infra_vdo:
+          - name: hc_vdo_1
+            device: /dev/loop0
+            slabsize: 128M
+        gluster_infra_volume_groups:
+          - vgname: vg_vdb
+            pvname: /dev/mapper/hc_vdo_1
+        gluster_infra_thick_lvs:
+          - vgname: vg_vdb
+            lvname: vg_vdb_thicklv1
+            size: 1G
+        gluster_infra_thinpools:
+          - vgname: vg_vdb
+            thinpoolname: foo_thinpool
+            thinpoolsize: 400M
+            poolmetadatasize: 200M
+        gluster_infra_lv_logicalvols:
+          - vgname: vg_vdb
+            thinpool: foo_thinpool
+            lvname: vg_vdb_thinlv
+            lvsize: 500M
+        gluster_infra_mount_devices:
+          - path: /mnt/thicklv
+            vgname: vg_vdb
+            lvname: vg_vdb_thicklv1
+          - path: /mnt/thinlv1
+            vgname: vg_vdb
+            lvname: vg_vdb_thinlv
