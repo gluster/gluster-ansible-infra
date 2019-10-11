@@ -1,0 +1,30 @@
+---
+- name: Bring up docker containers
+  hosts: localhost
+  gather_facts: false
+  vars:
+    inventory:
+      - name: host1
+        image: 'gluster/glusterd2-nightly'
+  roles:
+    - role: provision_docker
+      provision_docker_inventory: "{{ inventory }}"
+      provision_docker_volumes: "/dev:/dev"
+
+- name: Run tests
+  hosts: docker_containers
+  vars_files:
+    - vars.yml
+  roles:
+    - role: backend_setup
+
+  tasks:
+  - local_action:
+      module: docker
+      name: "{{ item.name }}"
+      state: absent
+      image: "{{ item.image }}"
+    with_items:
+    - "{{ inventory }}"
+    tags:
+    - remove-containers
