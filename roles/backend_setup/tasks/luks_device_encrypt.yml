@@ -1,0 +1,30 @@
+---
+# Create key file with <device>_key and encrypt devices
+
+- name: Create key file
+  copy:
+      dest: "/etc/{{ item.devicename.split('/')[-1] }}_key"
+      content: |
+        {{ item.passphrase }}
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Encrypt devices using key file
+  shell: echo ‘YES’ | cryptsetup luksFormat {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Open encrypt devices using key file
+  shell: cryptsetup luksOpen {{ item.devicename }} luks_{{ item.devicename.split('/')[-1] }} -d /etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Add encrypted device entry on /etc/crypttab to auto unlock
+  blockinfile:
+    path: "/etc/crypttab"
+    state: present
+    block: |
+      luks_{{ item.devicename.split('/')[-1] }} {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
+    marker: "# {mark} Entry for {{item.devicename}}"
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
