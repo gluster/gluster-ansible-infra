@@ -2,6 +2,7 @@
 # Create key file with <device>_key and encrypt devices
 
 - name: Create key file
+  no_log: true
   copy:
       dest: "/etc/{{ item.devicename.split('/')[-1] }}_key"
       content: |
@@ -10,16 +11,19 @@
   when: gluster_infra_luks_devices is defined
 
 - name: Encrypt devices using key file
+  no_log: true
   shell: echo ‘YES’ | cryptsetup luksFormat {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
   with_items: "{{ gluster_infra_luks_devices }}"
   when: gluster_infra_luks_devices is defined
 
 - name: Open encrypt devices using key file
+  no_log: true
   shell: cryptsetup luksOpen {{ item.devicename }} luks_{{ item.devicename.split('/')[-1] }} -d /etc/{{ item.devicename.split('/')[-1] }}_key
   with_items: "{{ gluster_infra_luks_devices }}"
   when: gluster_infra_luks_devices is defined
 
 - name: Add encrypted device entry on /etc/crypttab to auto unlock
+  no_log: true
   blockinfile:
     path: "/etc/crypttab"
     state: present
