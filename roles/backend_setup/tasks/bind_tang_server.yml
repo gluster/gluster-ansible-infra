@@ -7,14 +7,13 @@
       dest: "/etc/root_key"
       content: |
         {{ rootpassphrase }}
-  with_items: "{{ gluster_infra_tangserver_config }}"
-  when: gluster_infra_tangserver_config is defined
+  when: gluster_infra_tangservers is defined
 
 - name: Bind tang server with clevis
   no_log: true
   shell: echo ‘YES’ | clevis luks bind -f -k /etc/root_key -d  {{ rootdevice }} tang ' {"url":"{{item.url}}"} '
-  with_items: "{{ gluster_infra_tangserver_config }}"
-  when: gluster_infra_tangserver_config is defined
+  with_items: "{{ gluster_infra_tangservers }}"
+  when: gluster_infra_tangservers is defined
 
 - name: Add network entry on /etc/dracut.conf.d/clevis.conf
   no_log: true
@@ -25,10 +24,10 @@
       kernel_cmdline="ip=eno1:dhcp"
       omit_dracutmodules+="{{ networkinterface }}"
     marker: "# {mark} Entry for {{networkinterface}}"
-  with_items: "{{ gluster_infra_tangserver_config }}"
-  when: gluster_infra_tangserver_config is defined
+  with_items: "{{ gluster_infra_tangservers }}"
+  when: gluster_infra_tangservers is defined
 
 - name: Execute dracut -vf to configure tang
   no_log: true
   shell: dracut -vf
-  when: gluster_infra_tangserver_config is defined
+  when: gluster_infra_tangservers is defined
