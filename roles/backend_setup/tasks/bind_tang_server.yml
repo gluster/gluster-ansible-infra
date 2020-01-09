@@ -9,9 +9,18 @@
         {{ rootpassphrase }}
   when: gluster_infra_tangservers is defined
 
+- name: Download the advertisement from tang server
+  no_log: true
+  get_url:
+    url: "{{ item.url }}/adv"
+    dest: /etc/adv.jws
+    mode: '0777'
+  with_items: "{{ gluster_infra_tangservers }}"
+  when: gluster_infra_tangservers is defined
+
 - name: Bind tang server with clevis
   no_log: true
-  shell: echo ‘YES’ | clevis luks bind -f -k /etc/root_key -d  {{ rootdevice }} tang ' {"url":"{{item.url}}"} '
+  shell: clevis luks bind -f -k /etc/root_key -d  {{ rootdevice }} tang '{"url":"{{item.url}}", "adv":"/etc/adv.jws"}'
   with_items: "{{ gluster_infra_tangservers }}"
   when: gluster_infra_tangservers is defined
 

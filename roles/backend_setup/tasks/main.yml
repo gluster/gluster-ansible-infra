@@ -150,6 +150,6 @@
 # Bind Tand server
 - name: Bind Tand server
   import_tasks: bind_tang_server.yml
-  when: gluster_infra_tangserver_config is defined
+  when: gluster_infra_tangservers is defined
   tags:
     - bindtang
