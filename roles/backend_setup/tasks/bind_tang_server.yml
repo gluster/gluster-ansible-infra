@@ -28,6 +28,7 @@
   no_log: true
   blockinfile:
     path: /etc/dracut.conf.d/clevis.conf
+    create: yes
     state: present
     block: |
       kernel_cmdline="ip=eno1:dhcp"
