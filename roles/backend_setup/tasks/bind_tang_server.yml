@@ -10,34 +10,32 @@
   when: gluster_infra_tangservers is defined
 
 - name: Download the advertisement from tang server
-  no_log: true
-  get_url:
-    url: "{{ item.url }}/adv"
-    dest: /etc/adv.jws
-    mode: '0777'
-  with_items: "{{ gluster_infra_tangservers }}"
+  shell:
+    cmd: curl -sfg "{{ item.url }}/adv" -o /etc/adv{{ index }}.jws
+    warn: False
+  loop: "{{ gluster_infra_tangservers }}"
+  loop_control:
+    index_var: index
   when: gluster_infra_tangservers is defined
 
 - name: Bind tang server with clevis
-  no_log: true
-  shell: clevis luks bind -f -k /etc/root_key -d  {{ rootdevice }} tang '{"url":"{{item.url}}", "adv":"/etc/adv.jws"}'
-  with_items: "{{ gluster_infra_tangservers }}"
+  shell: clevis luks bind -f -k /etc/root_key -d  {{ rootdevice }} tang '{"url":"{{item.url}}", "adv":"/etc/adv{{ index }}.jws"}'
+  loop: "{{ gluster_infra_tangservers }}"
+  loop_control:
+    index_var: index
   when: gluster_infra_tangservers is defined
 
 - name: Add network entry on /etc/dracut.conf.d/clevis.conf
-  no_log: true
   blockinfile:
     path: /etc/dracut.conf.d/clevis.conf
     create: yes
     state: present
     block: |
-      kernel_cmdline="ip=eno1:dhcp"
+      kernel_cmdline="ip={{ networkinterface }}:dhcp"
       omit_dracutmodules+="{{ networkinterface }}"
     marker: "# {mark} Entry for {{networkinterface}}"
-  with_items: "{{ gluster_infra_tangservers }}"
   when: gluster_infra_tangservers is defined
 
 - name: Execute dracut -vf to configure tang
-  no_log: true
   shell: dracut -vf
   when: gluster_infra_tangservers is defined
