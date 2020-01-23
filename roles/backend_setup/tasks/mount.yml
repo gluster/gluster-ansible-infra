@@ -10,7 +10,8 @@
 
 # Reload systemctl daemon before mounting disks
 - name: Reload systemctl daemon
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
 
 # In case of vdo disks, use different mount options
 - name: Set mount options for VDO
