@@ -36,6 +36,10 @@
     marker: "# {mark} Entry for {{networkinterface}}"
   when: gluster_infra_tangservers is defined
 
+# Once "dracut -vf" execution is not working, so executing two times till finding issue. 
 - name: Execute dracut -vf to configure tang
-  shell: dracut -vf
+  command: dracut -vf
+  with_items:
+    - 1
+    - 2
   when: gluster_infra_tangservers is defined
