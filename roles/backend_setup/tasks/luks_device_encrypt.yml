@@ -1,5 +1,18 @@
 ---
-# Create key file with <device>_key and encrypt devices
+# This play is for blacklist devices,create key file with <device>_key and encrypt devices
+
+- name: "Blacklist gluster multipath devices"
+  no_log: true
+  blockinfile:
+    path: /etc/multipath.conf
+    state: present
+    block: |
+      blacklist {
+         devnode "^{{ item.devicename.split("/")[-1] }}"
+      }
+    marker: "# {mark} {{ item.devicename }} will be blacklisted"
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
 
 - name: Create key file
   no_log: true
