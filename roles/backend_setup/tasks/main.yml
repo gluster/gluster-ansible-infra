@@ -139,3 +139,17 @@
   when: fstrim_service is defined
   tags:
     - fstrim
+
+# Encrypt devices with LUKS
+- name: Encrypt devices with LUKS
+  import_tasks: luks_device_encrypt.yml
+  when: gluster_infra_luks_devices is defined
+  tags:
+    - luksencrypt
+
+# Bind Tand server
+- name: Bind Tand server
+  import_tasks: bind_tang_server.yml
+  when: gluster_infra_tangservers is defined
+  tags:
+    - bindtang

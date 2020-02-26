@@ -1,0 +1,47 @@
+---
+# This play is for blacklist devices,create key file with <device>_key and encrypt devices
+
+- name: "Blacklist gluster multipath devices"
+  no_log: true
+  blockinfile:
+    path: /etc/multipath.conf
+    state: present
+    block: |
+      blacklist {
+         devnode "^{{ item.devicename.split("/")[-1] }}"
+      }
+    marker: "# {mark} {{ item.devicename }} will be blacklisted"
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Create key file
+  no_log: true
+  copy:
+      dest: "/etc/{{ item.devicename.split('/')[-1] }}_key"
+      content: |
+        {{ item.passphrase }}
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Encrypt devices using key file
+  no_log: true
+  shell: echo ‘YES’ | cryptsetup luksFormat {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Open encrypt devices using key file
+  no_log: true
+  shell: cryptsetup luksOpen {{ item.devicename }} luks_{{ item.devicename.split('/')[-1] }} -d /etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Add encrypted device entry on /etc/crypttab to auto unlock
+  no_log: true
+  blockinfile:
+    path: "/etc/crypttab"
+    state: present
+    block: |
+      luks_{{ item.devicename.split('/')[-1] }} {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
+    marker: "# {mark} Entry for {{item.devicename}}"
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
