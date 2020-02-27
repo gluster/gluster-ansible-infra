@@ -1,0 +1,18 @@
+---
+# This play is for blacklist devices
+
+- name: "Blacklist gluster multipath devices"
+  no_log: true
+  blockinfile:
+    path: /etc/multipath.conf
+    state: present
+    block: |
+      blacklist {
+         devnode "^{{ item }}"
+      }
+    marker: "# {mark} {{ item }} will be blacklisted"
+  with_items: "{{ blacklist_mpath_devices }}"
+  when: blacklist_mpath_devices | length > 0
+
+- name: Reload multipathd
+  shell: systemctl reload multipathd

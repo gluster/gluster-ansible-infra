@@ -153,3 +153,10 @@
   when: gluster_infra_tangservers is defined
   tags:
     - bindtang
+
+# Blacklist multipath devices
+- name: Blacklist multipath devices
+  import_tasks: blacklist_mpath_devices.yml
+  when: blacklist_mpath_devices is defined
+  tags:
+    - blacklistdevices
