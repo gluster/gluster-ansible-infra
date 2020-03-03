@@ -6,7 +6,7 @@
   register: vdo_device_exists
   with_items: "{{ gluster_infra_vdo }}"
   when: item.device is defined
-  
+
 
 - name: Record for missing devices for phase 2
   set_fact:
@@ -27,7 +27,7 @@
   #maybe use package module?
   yum:
    name: "{{ packages }}"
-  register: vdo_deps 
+  register: vdo_deps
   vars:
     packages:
       - kmod-kvdo
@@ -60,8 +60,6 @@
     logicalsize: "{{ item.logicalsize | default('') }}"
     compression: "{{ item.compression | default('enabled') }}"
     blockmapcachesize: "{{ item.blockmapcachesize | default('128M') }}"
-    readcache: "{{ item.readcache | default('disabled') }}"
-    readcachesize: "{{ item.readcachesize | default('0') }}"
     emulate512: "{{ item.emulate512 | default('off') }}"
     slabsize: "{{ item.slabsize | default('2G') }}"
     writepolicy: "{{ item.writepolicy | default('sync') }}"
@@ -75,6 +73,5 @@
   with_items: "{{ gluster_infra_vdo }}"
   loop_control:
    index_var: index
-  #when we have a device and it exists 
+  #when we have a device and it exists
   when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
-
