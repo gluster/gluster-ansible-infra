@@ -1,10 +1,19 @@
 ---
 # This play is for blacklist devices
+- name: Flush all empty multipath devices
+  shell: multipath -F
+
+- name: Create /etc/multipath/conf.d if doesn't exists
+  file:
+    path: /etc/multipath/conf.d
+    recurse: yes
+    state: directory
 
 - name: "Blacklist gluster multipath devices"
   no_log: true
   blockinfile:
-    path: /etc/multipath.conf
+    path: /etc/multipath/conf.d/blacklist.conf
+    create: yes
     state: present
     block: |
       blacklist {
