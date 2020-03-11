@@ -25,6 +25,7 @@
     index_var: index
   when: gluster_infra_tangservers is defined
 
+# TODO Need to investigate how to configure incase of static deployment
 - name: Add network entry on /etc/dracut.conf.d/clevis.conf
   blockinfile:
     path: /etc/dracut.conf.d/clevis.conf
@@ -36,10 +37,11 @@
     marker: "# {mark} Entry for {{networkinterface}}"
   when: gluster_infra_tangservers is defined
 
-# Once "dracut -vf" execution is not working, so executing two times till finding issue. 
 - name: Execute dracut -vf to configure tang
-  command: dracut -vf
-  with_items:
-    - 1
-    - 2
+  command: dracut -vf --regenerate-all
   when: gluster_infra_tangservers is defined
+
+- name: Remove root_key file
+  file:
+    path: /etc/root_key
+    state: absent
