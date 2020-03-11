@@ -41,3 +41,27 @@
   loop_control:
     index_var: index
   when: gluster_infra_luks_devices is defined
+
+- name: Generate new random key file
+  no_log: true
+  shell: dd bs=1024 count=8192 if=/dev/urandom of=/etc/{{ item.devicename.split('/')[-1] }}_keyfile iflag=fullblock status=progress
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Set permission for new key file
+  no_log: true
+  shell: chmod 0400 /etc/{{ item.devicename.split('/')[-1] }}_keyfile
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Add new key file to luks device
+  no_log: true
+  shell: cryptsetup luksAddKey {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_keyfile --key-file=/etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Remove key file which was created with passphrase
+  no_log: true
+  shell: rm -rf /etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
