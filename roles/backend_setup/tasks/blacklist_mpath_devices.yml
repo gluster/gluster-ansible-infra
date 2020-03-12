@@ -16,7 +16,7 @@
     state: directory
 
 - name: Get the UUID of the devices
-  shell: blkid -s UUID -o value /dev/{{ item }}
+  shell: multipath -a /dev/{{ item }}
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
 
@@ -28,9 +28,9 @@
     state: present
     block: |
       blacklist {
-         wwid "{{ item.stdout }}"
+         wwid "{{ item.stdout.split()[1][1:-1] }}"
       }
-    marker: "# {mark} {{ item }} will be blacklisted"
+    marker: "# {mark} device will be blacklisted"
   loop: "{{ dev_uuid.results }}"
   when: blacklist_mpath_devices | length > 0
 
