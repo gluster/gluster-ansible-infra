@@ -1,5 +1,11 @@
 ---
 # This play is for blacklist devices
+- name: Ensure that multipathd services is running
+  service:
+    name: multipathd
+    state: started
+    enabled: yes
+
 - name: Flush all empty multipath devices
   shell: multipath -F
 
@@ -9,6 +15,11 @@
     recurse: yes
     state: directory
 
+- name: Get the UUID of the devices
+  shell: multipath -a /dev/{{ item }}
+  register: dev_uuid
+  with_items: "{{ blacklist_mpath_devices }}"
+
 - name: "Blacklist gluster multipath devices"
   no_log: true
   blockinfile:
@@ -17,10 +28,10 @@
     state: present
     block: |
       blacklist {
-         devnode "^{{ item }}"
+         wwid "{{ item.stdout.split()[1][1:-1] }}"
       }
-    marker: "# {mark} {{ item }} will be blacklisted"
-  with_items: "{{ blacklist_mpath_devices }}"
+    marker: "# {mark} device will be blacklisted"
+  loop: "{{ dev_uuid.results }}"
   when: blacklist_mpath_devices | length > 0
 
 - name: Reload multipathd

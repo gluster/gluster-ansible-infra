@@ -1,18 +1,5 @@
 ---
-# This play is for blacklist devices,create key file with <device>_key and encrypt devices
-
-- name: "Blacklist gluster multipath devices"
-  no_log: true
-  blockinfile:
-    path: /etc/multipath.conf
-    state: present
-    block: |
-      blacklist {
-         devnode "^{{ item.devicename.split("/")[-1] }}"
-      }
-    marker: "# {mark} {{ item.devicename }} will be blacklisted"
-  with_items: "{{ gluster_infra_luks_devices }}"
-  when: gluster_infra_luks_devices is defined
+# This play is for create key file with <device>_key and encrypt devices
 
 - name: Create key file
   no_log: true
@@ -35,13 +22,46 @@
   with_items: "{{ gluster_infra_luks_devices }}"
   when: gluster_infra_luks_devices is defined
 
+- name: Generate new random key file
+  no_log: true
+  shell: dd bs=1024 count=8192 if=/dev/urandom of=/etc/{{ item.devicename.split('/')[-1] }}_keyfile iflag=fullblock status=progress
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Set permission for new key file
+  no_log: true
+  shell: chmod 0400 /etc/{{ item.devicename.split('/')[-1] }}_keyfile
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Add new key file to luks device
+  no_log: true
+  shell: cryptsetup luksAddKey {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_keyfile --key-file=/etc/{{ item.devicename.split('/')[-1] }}_key
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
+- name: Find UUID for encrypted devices
+  no_log: true
+  shell: cryptsetup luksUUID {{ item.devicename }}
+  register: device_uuid
+  with_items: "{{ gluster_infra_luks_devices }}"
+  when: gluster_infra_luks_devices is defined
+
 - name: Add encrypted device entry on /etc/crypttab to auto unlock
   no_log: true
   blockinfile:
     path: "/etc/crypttab"
     state: present
     block: |
-      luks_{{ item.devicename.split('/')[-1] }} {{ item.devicename }} /etc/{{ item.devicename.split('/')[-1] }}_key
+      luks_{{ item.devicename.split('/')[-1] }} UUID={{ device_uuid.results[index].stdout }} /etc/{{ item.devicename.split('/')[-1] }}_keyfile
     marker: "# {mark} Entry for {{item.devicename}}"
+  loop: "{{ gluster_infra_luks_devices }}"
+  loop_control:
+    index_var: index
+  when: gluster_infra_luks_devices is defined
+
+- name: Remove key file which was created with passphrase
+  no_log: true
+  shell: rm -rf /etc/{{ item.devicename.split('/')[-1] }}_key
   with_items: "{{ gluster_infra_luks_devices }}"
   when: gluster_infra_luks_devices is defined
