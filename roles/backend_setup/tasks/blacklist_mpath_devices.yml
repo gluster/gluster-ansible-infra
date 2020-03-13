@@ -21,7 +21,6 @@
   with_items: "{{ blacklist_mpath_devices }}"
 
 - name: "Blacklist gluster multipath devices"
-  no_log: true
   blockinfile:
     path: /etc/multipath/conf.d/blacklist.conf
     create: yes
@@ -30,7 +29,7 @@
       blacklist {
          wwid "{{ item.stdout.split()[1][1:-1] }}"
       }
-    marker: "# {mark} device will be blacklisted"
+    marker: "# {mark} device {{ item.stdout.split()[1][1:-1] }} will be blacklisted"
   loop: "{{ dev_uuid.results }}"
   when: blacklist_mpath_devices | length > 0
 
