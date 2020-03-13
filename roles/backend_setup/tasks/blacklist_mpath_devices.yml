@@ -20,11 +20,7 @@
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
 
--debug:
-  msg: "{{dev_uuid}}"
-
 - name: "Blacklist gluster multipath devices"
-  no_log: true
   blockinfile:
     path: /etc/multipath/conf.d/blacklist.conf
     create: yes
