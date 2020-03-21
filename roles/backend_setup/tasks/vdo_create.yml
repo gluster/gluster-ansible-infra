@@ -70,6 +70,7 @@
     cputhreads: "{{ item.cputhreads | default('2') }}"
     logicalthreads: "{{ item.logicalthreads | default('1') }}"
     physicalthreads: "{{ item.physicalthreads | default('1') }}"
+    maxDiscardSize: "{{ item.maxDiscardSize | default('16M') }}"
   with_items: "{{ gluster_infra_vdo }}"
   loop_control:
    index_var: index
