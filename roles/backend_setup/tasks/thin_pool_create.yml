@@ -42,34 +42,34 @@
   set_fact:
    gluster_phase2_has_missing_devices: true
   loop: "{{ lvtp_device_exists.results }}"
-  when: item.stdout_lines is defined and "0" in item.stdout_lines  
+  when: item.stdout_lines is defined and "0" in item.stdout_lines
 
 - name: Check if thinpool exists
-  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.thinpoolname}}| sed 's/^ *//;s/$//'"    
+  shell: "lvs --options 'lv_attr' -a --noheadings {{item.vgname}}/{{item.thinpoolname}}| sed 's/^ *//;s/$//'"
   register: thinpool_attrs
   with_items: "{{ gluster_infra_thinpools }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+  when: >
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
    and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
 
 - include_tasks: get_vg_groupings.yml
-  vars: 
+  vars:
    volume_groups: >-
       {%- set output=[] -%}
       {%- for cnf in gluster_infra_thinpools -%}
       {%- if cnf is defined and cnf is not none and cnf.thinpoolname is defined and cnf.vgname is defined
-            and (thinpool_attrs.results[loop.index0].stdout is not defined or thinpool_attrs.results[loop.index0].stdout.find("t") != 0) 
+            and (thinpool_attrs.results[loop.index0].stdout is not defined or thinpool_attrs.results[loop.index0].stdout.find("t") != 0)
             and (cnf.meta_pvs is defined or cnf.pvs is defined)
       -%}
       {{- output.append({"vgname": cnf.vgname, "pvname": (cnf.pvs|default('') ~ ',' ~ (cnf.meta_pvs|default(''))).split(',') | select | list | unique | join(',')}) -}}
       {%- endif -%}
       {%- endfor -%}
       {{- output | to_json -}}
-  when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
+  when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
 
 # https://github.com/ansible/ansible/issues/13262
 # block of tasks, which is executed when there are valid pools and pool items are configured.
@@ -82,25 +82,25 @@
      vg: "{{ (item.value | first).vgname }}"
      pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
      pv_options: >-
-         {% if (item.value | first).raid is defined and (item.value | first).raid is not none 
-            and (item.value | first).raid.level is defined and (item.value | first).raid.devices is defined and (item.value | first).raid.stripe is defined 
+         {% if (item.value | first).raid is defined and (item.value | first).raid is not none
+            and (item.value | first).raid.level is defined and (item.value | first).raid.devices is defined and (item.value | first).raid.stripe is defined
             and (item.value | first).raid.level in [0,5,6,10]%}
          {% if (item.value | first).raid.level == 0 %}
-         {{ "--dataalignment " ~ ((item.value | first).raid.devices|int * (item.value | first).raid.stripe|int)|int ~ "K"}}  
+         {{ "--dataalignment " ~ ((item.value | first).raid.devices|int * (item.value | first).raid.stripe|int)|int ~ "K"}}
          {% elif (item.value | first).raid.level == 5 %}
-         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-1) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
+         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-1) * (item.value | first).raid.stripe|int)|int ~ "K"}}
          {% elif (item.value | first).raid.level == 6 %}
-         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-2) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
+         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int-2) * (item.value | first).raid.stripe|int)|int ~ "K"}}
          {% elif (item.value | first).raid.level == 10 %}
-         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int/2) * (item.value | first).raid.stripe|int)|int ~ "K"}}  
-         {% endif %}    
+         {{ "--dataalignment " ~ (((item.value | first).raid.devices|int/2) * (item.value | first).raid.stripe|int)|int ~ "K"}}
+         {% endif %}
          {% else %}
          {{ "--dataalignment 256K" }}
          {% endif %}
-     
+
      pesize: >-
-         {%- if (item.value | first).raid is defined and (item.value | first).raid is not none 
-            and (item.value | first).raid.level is defined and (item.value | first).raid.devices is defined and (item.value | first).raid.stripe is defined 
+         {%- if (item.value | first).raid is defined and (item.value | first).raid is not none
+            and (item.value | first).raid.level is defined and (item.value | first).raid.devices is defined and (item.value | first).raid.stripe is defined
             and (item.value | first).raid.level in [0,5,6,10] -%}
          {%- if (item.value | first).raid.level == 0 -%}
          {{- ((item.value | first).raid.devices|int * (item.value | first).raid.stripe|int)|int ~ "K"-}}
@@ -117,14 +117,14 @@
   loop: "{{ gluster_volumes_by_groupname | dict2items }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0 
+  when: >
+   gluster_volumes_by_groupname is defined and gluster_volumes_by_groupname is not none and gluster_volumes_by_groupname|length >0
    and item.value|length>0
 
 - name: update LVM fact's
-  setup: 
+  setup:
    filter: 'ansible_lvm'
-  when: gluster_changed_vgs.changed 
+  when: gluster_changed_vgs.changed
 
 - name: Create a LV thinpool-data
   lvol:
@@ -132,16 +132,16 @@
      shrink: false
      vg: "{{ item.vgname }}"
      lv: "{{ item.thinpoolname }}"
-     pvs: "{{ item.pvs | default() }}"     
+     pvs: "{{ item.pvs | default() }}"
      size: "{{ item.thinpoolsize | default('100%FREE') }}"
-     opts: " 
+     opts: "
              {{ item.opts | default('') }} "
   with_items: "{{ gluster_infra_thinpools }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+  when: >
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
@@ -153,16 +153,16 @@
      shrink: false
      vg: "{{ item.vgname }}"
      lv: "{{ item.thinpoolname }}_meta"
-     pvs: "{{ ((item.meta_pvs is defined and item.meta_pvs) or item.pvs) | default() }}"     
+     pvs: "{{ ((item.meta_pvs is defined and item.meta_pvs) or item.pvs) | default() }}"
      size: "{{ item.poolmetadatasize | default('16G') }}"
-     opts: " 
+     opts: "
              {{ ((item.meta_opts is defined and item.meta_opts) or item.opts) | default('') }} "
   with_items: "{{ gluster_infra_thinpools }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+  when: >
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
@@ -173,28 +173,28 @@
   shell: >-
    lvconvert -y --type thin-pool {{item.vgname}}/{{item.thinpoolname}}
    --poolmetadata {{ item.thinpoolname }}_meta
-   {% if item.raid is defined and item.raid is not none 
-      and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined 
+   {% if item.raid is defined and item.raid is not none
+      and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined
       and item.raid.level in [0,5,6,10]%}
    {% if item.raid.level == 0 %}
-   {{ "--chunksize " ~ (item.raid.devices|int * item.raid.stripe|int)|int ~ "K"}}  
+   {{ "--chunksize " ~ (item.raid.devices|int * item.raid.stripe|int)|int ~ "K"}}
    {% elif item.raid.level == 5 %}
-   {{ "--chunksize " ~ ((item.raid.devices|int-1) * item.raid.stripe|int)|int ~ "K"}}  
+   {{ "--chunksize " ~ ((item.raid.devices|int-1) * item.raid.stripe|int)|int ~ "K"}}
    {% elif item.raid.level == 6 %}
-   {{ "--chunksize " ~ ((item.raid.devices|int-2) * item.raid.stripe|int)|int ~ "K"}}  
+   {{ "--chunksize " ~ ((item.raid.devices|int-2) * item.raid.stripe|int)|int ~ "K"}}
    {% elif item.raid.level == 10 %}
-   {{ "--chunksize " ~ ((item.raid.devices|int/2) * item.raid.stripe|int)|int ~ "K"}}  
-   {% endif %}    
+   {{ "--chunksize " ~ ((item.raid.devices|int/2) * item.raid.stripe|int)|int ~ "K"}}
+   {% endif %}
    {% else %}
    {{ "--chunksize 256K" }}
-   {% endif %} 
+   {% endif %}
    --zero n
   with_items: "{{ gluster_infra_thinpools }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
+  when: >
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
    and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
    and (thinpool_attrs.results[index].stdout is not defined or thinpool_attrs.results[index].stdout.find("t") != 0)
    and ((item.opts is defined and "raid" in item.opts) or item.meta_pvs is defined or item.meta_opts is defined)
@@ -208,32 +208,43 @@
      pvs: "{{ item.pvs | default() }}"
      thinpool: "{{ item.thinpoolname }}"
      size: "{{ item.thinpoolsize | default('100%FREE') }}"
-     opts: >- 
-         {% if item.raid is defined and item.raid is not none 
-            and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined 
+     opts: >-
+         {% if item.raid is defined and item.raid is not none
+            and item.raid.level is defined and item.raid.devices is defined and item.raid.stripe is defined
             and item.raid.level in [0,5,6,10]%}
          {% if item.raid.level == 0 %}
-         {{ "--chunksize " ~ (item.raid.devices|int * item.raid.stripe|int)|int ~ "K"}}  
+         {{ "--chunksize " ~ (item.raid.devices|int * item.raid.stripe|int)|int ~ "K"}}
          {% elif item.raid.level == 5 %}
-         {{ "--chunksize " ~ ((item.raid.devices|int-1) * item.raid.stripe|int)|int ~ "K"}}  
+         {{ "--chunksize " ~ ((item.raid.devices|int-1) * item.raid.stripe|int)|int ~ "K"}}
          {% elif item.raid.level == 6 %}
-         {{ "--chunksize " ~ ((item.raid.devices|int-2) * item.raid.stripe|int)|int ~ "K"}}  
+         {{ "--chunksize " ~ ((item.raid.devices|int-2) * item.raid.stripe|int)|int ~ "K"}}
          {% elif item.raid.level == 10 %}
-         {{ "--chunksize " ~ ((item.raid.devices|int/2) * item.raid.stripe|int)|int ~ "K"}}  
-         {% endif %}    
+         {{ "--chunksize " ~ ((item.raid.devices|int/2) * item.raid.stripe|int)|int ~ "K"}}
+         {% endif %}
          {% else %}
          {{ "--chunksize 256K" }}
-         {% endif %} 
+         {% endif %}
          --poolmetadatasize {{ item.poolmetadatasize }}
          --zero n
          {{ item.opts | default('') }}
   with_items: "{{ gluster_infra_thinpools }}"
   loop_control:
    index_var: index
-  when: > 
-   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0 
-   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined   
-   and lvtp_device_exists.results[index].stdout_lines is defined and "0" not in lvtp_device_exists.results[index].stdout_lines
-   and ((item.opts is not defined or "raid" not in item.opts) and item.meta_pvs is not defined and item.meta_opts is not defined)
+  when: >
+   gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
+   and item is defined and item is not none and item.thinpoolname is defined and item.thinpoolname is defined  and item.vgname is defined
+   and item.raid is defined
 #end-block
-  
+
+- name: Create a LV thinpool for similar device types
+  lvol:
+     state: present
+     shrink: false
+     vg: "{{ item.vgname }}"
+     thinpool: "{{ item.thinpoolname }}"
+     size: "{{ item.thinpoolsize | default('100%FREE') }}"
+     opts: " --chunksize {{ lv_chunksize }}
+             --poolmetadatasize {{ item.poolmetadatasize }}
+             --zero n"
+  with_items: "{{ gluster_infra_thinpools }}"
+  when: gluster_infra_thinpools is defined and item.raid is not defined
