@@ -1,5 +1,8 @@
 ---
 # This play is for blacklist devices
+- name: Ensure that multipathd services is enabled
+  shell: vdsm-tool configure --force
+
 - name: Ensure that multipathd services is running
   service:
     name: multipathd
