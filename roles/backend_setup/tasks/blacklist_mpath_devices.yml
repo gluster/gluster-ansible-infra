@@ -20,16 +20,26 @@
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
 
-- name: "Blacklist gluster multipath devices"
+- name: Check that the blacklist.conf exists
+  stat:
+    path: /etc/multipath/conf.d/blacklist.conf
+  register: stat_result
+
+- name: Create blacklist template content
   blockinfile:
     path: /etc/multipath/conf.d/blacklist.conf
     create: yes
     state: present
     block: |
       blacklist {
-         wwid "{{ item.stdout.split()[1][1:-1] }}"
       }
-    marker: "# {mark} device {{ item.stdout.split()[1][1:-1] }} will be blacklisted"
+  when: stat_result.stat.exists == False
+
+- name: Add wwid to blacklist in blacklist.conf file
+  lineinfile:
+    path: /etc/multipath/conf.d/blacklist.conf
+    insertafter: 'blacklist'
+    line: wwid "{{ item.stdout.split()[1][1:-1] }}"
   loop: "{{ dev_uuid.results }}"
   when: blacklist_mpath_devices | length > 0
 
