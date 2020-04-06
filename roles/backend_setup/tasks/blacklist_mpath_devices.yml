@@ -1,7 +1,20 @@
 ---
 # This play is for blacklist devices
-- name: Ensure that multipathd services is enabled
+- name: Find whether device is a luks device
+  shell: cryptsetup isLuks /dev/{{ item }}
+  register: result
+  ignore_errors: True
+  with_items: "{{ blacklist_mpath_devices }}"
+  when: blacklist_mpath_devices is defined
+
+- name: Check that the multipath.conf exists
+  stat:
+    path: /etc/multipath.conf
+  register: file_exist
+
+- name: Ensure that multipathd services is enabled if not
   shell: vdsm-tool configure --force
+  when: file_exist.stat.exists == False
 
 - name: Ensure that multipathd services is running
   service:
@@ -39,12 +52,14 @@
   when: stat_result.stat.exists == False
 
 - name: Add wwid to blacklist in blacklist.conf file
-  lineinfile:
+  blockinfile:
     path: /etc/multipath/conf.d/blacklist.conf
     insertafter: 'blacklist'
-    line: wwid "{{ item.stdout.split()[1][1:-1] }}"
+    block: |
+       wwid "{{ item.stdout.split()[1][1:-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.item }}"
   loop: "{{ dev_uuid.results }}"
-  when: blacklist_mpath_devices | length > 0
+  when: blacklist_mpath_devices | length > 0 and item.failed == false
 
 - name: Reload multipathd
   shell: systemctl reload multipathd
