@@ -32,6 +32,7 @@
     state: directory
 
 - name: Get the UUID of the devices
+  ignore_errors: True
   shell: multipath -a /dev/{{ item }}
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
