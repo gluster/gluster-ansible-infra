@@ -70,9 +70,18 @@
     cputhreads: "{{ item.cputhreads | default('2') }}"
     logicalthreads: "{{ item.logicalthreads | default('1') }}"
     physicalthreads: "{{ item.physicalthreads | default('1') }}"
-    maxDiscardSize: "{{ item.maxDiscardSize | default('16M') }}"
   with_items: "{{ gluster_infra_vdo }}"
   loop_control:
    index_var: index
   #when we have a device and it exists
   when: item.device is defined and vdo_device_exists.results[index].stdout is defined and vdo_device_exists.results[index].stdout == "1"
+
+# This is a workaround for now, as vdo ansible module has missing option for maxDiscardSize
+- name: Set VDO maxDiscardSize as 16M
+  command: "vdo modify -a --maxDiscardSize 16M"
+
+- name: Restart all VDO volumes
+  command: "vdo {{item}} -a"
+  with_items:
+  - stop
+  - start
