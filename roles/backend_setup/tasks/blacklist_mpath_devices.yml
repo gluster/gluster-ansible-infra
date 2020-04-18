@@ -3,7 +3,7 @@
 - name: Find whether device is a luks device
   shell: cryptsetup isLuks /dev/{{ item }}
   register: result
-  ignore_errors: True
+  failed_when: result.rc == 0
   with_items: "{{ blacklist_mpath_devices }}"
   when: blacklist_mpath_devices is defined
 
