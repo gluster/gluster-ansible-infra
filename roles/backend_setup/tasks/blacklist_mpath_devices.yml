@@ -22,9 +22,6 @@
     state: started
     enabled: yes
 
-- name: Flush all empty multipath devices
-  shell: multipath -F
-
 - name: Create /etc/multipath/conf.d if doesn't exists
   file:
     path: /etc/multipath/conf.d
