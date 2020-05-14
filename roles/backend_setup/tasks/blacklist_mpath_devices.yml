@@ -13,7 +13,7 @@
   register: file_exist
 
 - name: Ensure that multipathd services is enabled if not
-  shell: vdsm-tool configure --force
+  shell: vdsm-tool configure --module multipath
   when: file_exist.stat.exists == False
 
 - name: Ensure that multipathd services is running
