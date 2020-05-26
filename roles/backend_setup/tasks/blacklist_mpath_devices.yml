@@ -1,12 +1,5 @@
 ---
 # This play is for blacklist devices
-- name: Find whether device is a luks device
-  shell: cryptsetup isLuks /dev/{{ item }}
-  register: result
-  ignore_errors: True
-  with_items: "{{ blacklist_mpath_devices }}"
-  when: blacklist_mpath_devices is defined
-
 - name: Check that the multipath.conf exists
   stat:
     path: /etc/multipath.conf
