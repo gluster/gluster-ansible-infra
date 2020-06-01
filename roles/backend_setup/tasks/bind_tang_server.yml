@@ -9,14 +9,23 @@
         {{ rootpassphrase }}
   when: gluster_infra_tangservers is defined
 
-- name: Download the advertisement from tang server
+- name: Download the advertisement from tang server for IPv4
   shell:
     cmd: curl -sfg "{{ item.url }}/adv" -o /etc/adv{{ index }}.jws
     warn: False
   loop: "{{ gluster_infra_tangservers }}"
   loop_control:
     index_var: index
-  when: gluster_infra_tangservers is defined
+  when: "gluster_infra_tangservers is defined and ip_version == 'IPv4'"
+
+- name: Download the advertisement from tang server for IPv6
+  shell:
+    cmd: curl -6 -sfg "{{ item.url }}/adv" -o /etc/adv{{ index }}.jws
+    warn: False
+  loop: "{{ gluster_infra_tangservers }}"
+  loop_control:
+    index_var: index
+  when: "gluster_infra_tangservers is defined and ip_version == 'IPv6'"
 
 - name: Bind tang server with clevis
   no_log: true
