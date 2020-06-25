@@ -55,7 +55,7 @@
   set_fact:
      vdo_devs: "{{ vdo_devs|default([]) + [ item.vgname ] }}"
   with_items: "{{ gluster_infra_volume_groups | default([]) }}"
-  when: item.pvname is defined and item.pvname is search("/dev/mapper/")
+  when: item.pvname is defined and item.pvname is search("/dev/mapper/vdo")
 
 # set lvm config
 - name: Configure LVM
@@ -123,7 +123,7 @@
   tags:
     - luksencrypt
 
-# Bind Tand server
+# Bind Tang server
 - name: Bind Tand server
   import_tasks: bind_tang_server.yml
   when: gluster_infra_tangservers is defined
