@@ -27,8 +27,8 @@ Unmount the filesystem and delete the roles
 
     - hosts: gluster_servers
       vars:
-        - gluster_infra_reset_mnt_path: /mnt/foo
-        - gluster_infra_reset_volume_group: gluster_vg
+        - gluster_infra_reset_mnt_paths: /mnt/foo
+        - gluster_infra_reset_volume_groups: gluster_vg
       roles:
          - gluster.infra
 
