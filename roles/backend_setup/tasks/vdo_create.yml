@@ -80,8 +80,11 @@
 - name: Set VDO maxDiscardSize as 16M
   command: "vdo modify -a --maxDiscardSize 16M"
 
-- name: Restart all VDO volumes
-  command: "vdo {{item}} -a"
-  with_items:
-  - stop
-  - start
+- name: Stop VDO volumes
+  command: "vdo stop -n {{ item.name }}"
+  with_items: "{{ gluster_infra_vdo }}"
+
+- name: Start VDO volumes
+  shell: "vdo start -n {{ item.name }}"
+  with_items: "{{ gluster_infra_vdo }}"
+
