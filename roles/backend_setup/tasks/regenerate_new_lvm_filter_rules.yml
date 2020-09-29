@@ -1,0 +1,4 @@
+---
+- name: Regenerate new LVM filter rules
+  shell: >
+    vdsm-tool config-lvm-filter -y  
