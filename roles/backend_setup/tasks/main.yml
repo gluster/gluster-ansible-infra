@@ -63,8 +63,10 @@
   when: gluster_infra_lvm is defined
   tags:
     - lvmconfig
-
-
+    
+- name: Exclue LVM Filter rules
+  import_tasks: lvm_exclude_filter.yml
+  
 #phase #1
 - name: Create a vdo disk
   import_tasks: vdo_create.yml
@@ -101,7 +103,10 @@
   when: gluster_infra_mount_devices is defined and gluster_infra_mount_devices is not none
   tags:
     - mount
-
+    
+- name: Re-generate new LVM Filrer rules
+  import_tasks: regenerate_new_lvm_filter_rules.yml
+  
 # set kernel boot params for lvm volumes
 - name: Configure lvm kernel parameters
   import_tasks: lvm_kernelparams.yml
