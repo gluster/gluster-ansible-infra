@@ -2,4 +2,5 @@
 - name: Remove the existing LVM filter
   shell: >
      sed -i /^filter/d /etc/lvm/lvm.conf
+  ignore_errors: yes
      
