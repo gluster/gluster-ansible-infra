@@ -8,6 +8,9 @@
 # https://wiki.gentoo.org/wiki/LVM/en
 # https://serverfault.com/questions/981694/why-does-xfs-uses-lvm-cache-chunk-size-instead-the-raid5-setup-for-sunit-swidth
 
+- name: Exclude LVM Filter rules
+  import_tasks: lvm_exclude_filter.yml
+ 
 # Blacklist multipath devices
 - name: Blacklist multipath devices
   import_tasks: blacklist_mpath_devices.yml
@@ -63,8 +66,7 @@
   when: gluster_infra_lvm is defined
   tags:
     - lvmconfig
-
-
+      
 #phase #1
 - name: Create a vdo disk
   import_tasks: vdo_create.yml
@@ -101,7 +103,7 @@
   when: gluster_infra_mount_devices is defined and gluster_infra_mount_devices is not none
   tags:
     - mount
-
+  
 # set kernel boot params for lvm volumes
 - name: Configure lvm kernel parameters
   import_tasks: lvm_kernelparams.yml
@@ -129,3 +131,6 @@
   when: gluster_infra_tangservers is defined
   tags:
     - bindtang
+
+- name: Re-generate new LVM Filrer rules
+  import_tasks: regenerate_new_lvm_filter_rules.yml
