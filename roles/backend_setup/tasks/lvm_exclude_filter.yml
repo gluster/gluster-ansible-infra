@@ -1,0 +1,10 @@
+---
+- name: Backup lvm.conf file
+  copy:
+    src: /etc/lvm/lvm.conf
+    dest: /backup
+
+- name: Remove the existing LVM filter
+  shell: >
+     sed -i /^filter/d /etc/lvm/lvm.conf
+     
