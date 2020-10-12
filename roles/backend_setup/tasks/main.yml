@@ -11,6 +11,7 @@
 - name: Check if vdsm-python package is installed or not
   command: rpm -q vdsm-python
   register: rpm_check
+  ignore_errors: yes
   
 - name: Exclude LVM Filter rules
   import_tasks: lvm_exclude_filter.yml
