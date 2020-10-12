@@ -8,8 +8,14 @@
 # https://wiki.gentoo.org/wiki/LVM/en
 # https://serverfault.com/questions/981694/why-does-xfs-uses-lvm-cache-chunk-size-instead-the-raid5-setup-for-sunit-swidth
 
+- name: Check if vdsm-python package is installed or not
+  command: rpm -q vdsm-python
+  register: rpm_check
+  
 - name: Exclude LVM Filter rules
   import_tasks: lvm_exclude_filter.yml
+  when: rpm.check.rc == 0 and gluster_infra_lvm is defined
+  
  
 # Blacklist multipath devices
 - name: Blacklist multipath devices
@@ -134,3 +140,4 @@
 
 - name: Re-generate new LVM Filrer rules
   import_tasks: regenerate_new_lvm_filter_rules.yml
+  when: rpm.check.rc == 0 and gluster_infra_lvm is defined
