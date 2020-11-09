@@ -5,8 +5,7 @@
   no_log: true
   copy:
       dest: "/etc/root_key"
-      content: |
-        {{ rootpassphrase }}
+      content: "{{ rootpassphrase }}"
   when: gluster_infra_tangservers is defined
 
 - name: Download the advertisement from tang server for IPv4
