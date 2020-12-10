@@ -24,10 +24,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
       # Runs a single command using the runners shell
+        
       - name: Run a one-line script
         run: echo Hello, world!
+      
+      - name: Install glusteransible-infra rpm
+        run: sudo yum install https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/01708242-gluster-ansible-infra/gluster-ansible-infra-1.0.4-15.el8.noarch.rpm -y 
       
       - name: clone the repo
         run: git clone https://github.com/pkesavap/gluster-ansible-infra.git && cd gluster-ansible-infra
