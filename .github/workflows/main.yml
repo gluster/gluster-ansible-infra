@@ -28,13 +28,16 @@ jobs:
         
       - name: Run a one-line script
         run: echo Hello, world!
-      
-      - name: Install glusteransible-infra rpm
-        run: sudo yum install https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/01708242-gluster-ansible-infra/gluster-ansible-infra-1.0.4-15.el8.noarch.rpm -y 
-      
+
+      - name: Make a directory in /etc/ansible
+        run: sudo mkdir -p /etc/ansible/roles
+            
       - name: clone the repo
         run: git clone https://github.com/pkesavap/gluster-ansible-infra.git && cd gluster-ansible-infra
       
+      - name: Install glusteransible-infra rpm
+        run: sudo cp -r ./../gluster-ansible-infra /etc/ansible/roles/gluster.infra 
+        
       - name:  Initiate Test for gluster-ansible
         run: sudo ansible-playbook ./tests/test.yml
 
