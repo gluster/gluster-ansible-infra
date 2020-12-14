@@ -15,7 +15,6 @@
   
 - name: Exclude LVM Filter rules
   import_tasks: lvm_exclude_filter.yml
-  when: rpm_check.rc == 0 and gluster_infra_lvm is defined
   
  
 # Blacklist multipath devices
@@ -141,4 +140,3 @@
 
 - name: Re-generate new LVM Filrer rules
   import_tasks: regenerate_new_lvm_filter_rules.yml
-  when: rpm_check.rc == 0 and gluster_infra_lvm is defined
