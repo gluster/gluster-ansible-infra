@@ -23,7 +23,7 @@
 
 - name: Get the UUID of the devices
   ignore_errors: True
-  shell: multipath -a /dev/{{ item | regex_replace('[0-9]+$') }}
+  shell: multipath -a /dev/{% if item.startswith('sd') %}{{ item | regex_replace('[0-9]+$') }}{% else %}{{ item }}{% endif %}
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
 
