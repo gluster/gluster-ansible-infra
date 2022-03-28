@@ -11,7 +11,7 @@ Source0:   %{url}/archive/v%{version}.tar.gz#/%{name}-%{version}-%{buildnum}.tar
 License:   GPLv3
 BuildArch: noarch
 
-Requires:  ansible >= 2.12
+Requires:  ansible-core >= 2.12
 
 %description
 Collection of Ansible roles for the deploying and managing GlusterFS clusters.
