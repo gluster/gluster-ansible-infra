@@ -1,13 +1,13 @@
 %global rolesdir %{_sysconfdir}/ansible/roles/gluster.infra
-%global buildnum 1
+%global buildnum 20
 
 Name:      gluster-ansible-infra
-Version:   1.0.0
-Release:   1%{?dist}
+Version:   1.0.4
+Release:   %{buildnum}%{?dist}
 Summary:   Ansible roles for GlusterFS infrastructure management
 
 URL:       https://github.com/gluster/gluster-ansible-infra
-Source0:   %{url}/archive/v%{version}.tar.gz#/%{name}-%{version}-%{buildnum}.tar.gz
+Source0:   %{url}/archive/v%{version}-%{buildnum}.tar.gz#/%{name}-%{version}-%{buildnum}.tar.gz
 License:   GPLv3
 BuildArch: noarch
 
@@ -19,7 +19,7 @@ The infra role enables user to configure firewall, setup backend disks, reset
 backend disks.
 
 %prep
-%autosetup -p1
+%autosetup -p1 -n %{name}-%{version}-%{buildnum}
 
 %build
 
@@ -34,6 +34,9 @@ cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars playbook
 %license LICENSE
 
 %changelog
+* Fri Apr 01 2022 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.4-20
+- Rebase on v1.0.4-20
+
 * Wed Feb 20 2019 Sachidananda Urs <sac@redhat.com> 1.0.0-1
 - Bump the version numer to 1
 
