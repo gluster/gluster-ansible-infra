@@ -27,6 +27,24 @@
   register: dev_uuid
   with_items: "{{ blacklist_mpath_devices }}"
 
+- name: Remove UUID of the devices from /etc/multipath/wwids
+  ignore_errors: True
+  shell: multipath -w {{ item.stdout.split()[1][1:-1] }}
+  loop: "{{ dev_uuid.results }}"
+  when: blacklist_mpath_devices | length > 0 and item.failed == false
+
+- name: Add entry in system.service
+  ignore_errors: True
+  command: lvmdevices --adddev /dev/{{ item }}
+  with_items: "{{ blacklist_mpath_devices }}"
+  when: blacklist_mpath_devices | length > 0
+
+- name: Clean device
+  ignore_errors: True
+  command: wipefs -a /dev/{{ item }}
+  with_items: "{{ blacklist_mpath_devices }}"
+  when: blacklist_mpath_devices | length > 0
+
 - name: Check that the blacklist.conf exists
   stat:
     path: /etc/multipath/conf.d/blacklist.conf
@@ -54,3 +72,6 @@
 
 - name: Reload multipathd
   shell: systemctl reload multipathd
+
+  tags:
+    - cleanup_bricks

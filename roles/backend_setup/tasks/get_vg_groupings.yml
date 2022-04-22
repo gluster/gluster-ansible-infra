@@ -28,20 +28,19 @@
 
 - name: Check if vg block device exists
   shell: >
-   {% for pvsname in item.value | json_query('[].pvname')  %}
+   {% for pvsname in item.value | ovirt.ovirt.json_query('[].pvname')  %}
    test -b {{ pvsname }} && echo "1" || echo  "0";
    {% endfor %}
   register: vg_device_exists
   loop: "{{gluster_volumes_by_groupname_pre | dict2items}}"
-
 
 - name: Filter none-existing devices
   set_fact:
    gluster_volumes_by_groupname: >-
     {%- set output={} -%}
     {%- for vgname, devicesConf in gluster_volumes_by_groupname_pre.items() -%}
-      {%- for item in vg_device_exists.results | json_query('[?item.key==`' ~ vgname ~ '`]') -%}
-        {%- set confs=[] -%}    
+      {%- for item in vg_device_exists.results | ovirt.ovirt.json_query('[?item.key==`' ~ vgname ~ '`]') -%}
+        {%- set confs=[] -%}
         {%- for vgConfig in item.item.value -%}
             {%- if item.stdout_lines is defined and item.stdout_lines[loop.index0] == "1" -%}
               {%- set vgConfigCln=dict(item.item.value | first) -%}

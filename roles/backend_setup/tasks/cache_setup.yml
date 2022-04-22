@@ -7,35 +7,39 @@
 # caching)
 
 - name: Extend volume group
-  lvg:
-     state: present
-     vg: "{{ item.vgname }}"
-     pvs: "{{ item.cachedisk }}"
-     pv_options: "--dataalignment 256K"
+  command: "vgcreate --dataalignment 256K {{ item.vgname }} {{ item.cachedisk }}"
+  # lvg:
+  #    state: present
+  #    vg: "{{ item.vgname }}"
+  #    pvs: "{{ item.cachedisk }}"
+  #    pv_options: "--dataalignment 256K"
   with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Change attributes of LV
-  lvol:
-     state: present
-     vg: "{{ item.vgname }}"
-     thinpool: "{{ item.cachethinpoolname }}"
-     opts: " --zero n "
+  command: "lvcreate --zero n --thinpool {{ item.cachethinpoolname }} {{ item.vgname }}"
+  # lvol:
+  #    state: present
+  #    vg: "{{ item.vgname }}"
+  #    thinpool: "{{ item.cachethinpoolname }}"
+  #    opts: " --zero n "
   with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Create LV for cache
-  lvol:
-     state: present
-     vg: "{{ item.vgname }}"
-     lv: "{{ item.cachelvname }}"
-     size: "{{ item.cachelvsize }}"
+  command: "lvcreate -l {{ item.cachelvsize }} -n {{ item.cachelvname }} {{ item.vgname }}"
+  # lvol:
+  #    state: present
+  #    vg: "{{ item.vgname }}"
+  #    lv: "{{ item.cachelvname }}"
+  #    size: "{{ item.cachelvsize }}"
   with_items: "{{ gluster_infra_cache_vars }}"
 
 - name: Create metadata LV for cache
-  lvol:
-     state: present
-     vg: "{{ item.vgname }}"
-     lv: "{{ item.cachemetalvname }}"
-     size: "{{ item.cachemetalvsize }}"
+  command: "lvcreate -l {{ item.cachemetalvsize }} -n {{ item.cachemetalvname }} {{ item.vgname }}"
+  # lvol:
+  #    state: present
+  #    vg: "{{ item.vgname }}"
+  #    lv: "{{ item.cachemetalvname }}"
+  #    size: "{{ item.cachemetalvsize }}"
   with_items: "{{ gluster_infra_cache_vars }}"
   when: item.cachemetalvname is defined
 
@@ -65,3 +69,4 @@
      lvconvert -y --type cache --cachepool "/dev/{{item.vgname}}/{{item.cachelvname}}"
      "/dev/{{item.vgname}}/{{item.cachethinpoolname}}"
   with_items: "{{ gluster_infra_cache_vars }}"
+
