@@ -11,17 +11,20 @@
 
 # Delete the volume groups and physical volumes
 - name: Delete volume groups
-  lvg:
-    vg: "{{ item }}"
-    state: absent
-    force: yes
+  command: "vgremove {{ item }} --force"
+  # lvg:
+  #   vg: "{{ item }}"
+  #   state: absent
+  #   force: yes
   with_items: "{{ gluster_infra_reset_volume_groups }}"
   when: gluster_infra_reset_volume_groups is defined
 
 # Remove vdo devices if any
 - name: Remove VDO devices
-  vdo:
-    name: "{{ item }}"
-    state: absent
+  command: "vdo remove -n {{ item }} --force"
+  # vdo:
+  #   name: "{{ item }}"
+  #   state: absent
   with_items: "{{ gluster_infra_reset_vdos }}"
   when: gluster_infra_reset_vdos is defined
+

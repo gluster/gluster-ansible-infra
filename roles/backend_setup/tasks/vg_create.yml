@@ -52,19 +52,24 @@
   loop: "{{ vg_device_exists.results }}"
   when: item.stdout_lines is defined and "0" in item.stdout_lines
 
+- name: Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: vg names {{ gluster_volumes_by_groupname }}
+
 # Tasks to create a volume group
 # The devices in `pvs' can be a regular device or a VDO device
 # Please take note; only the first item per volume group will define the actual configuraton!
 #TODO: fix pesize // {{ ((item.value | first).vg_pesize || vg_pesize) | default(4) }}
 - name: Create volume groups
   register: gluster_changed_vgs
-  lvg:
-    state: present
-    vg: "{{ (item.value | first).vgname }}"
-    pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
-    pv_options: "--dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }}"
+  command: vgcreate --dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }} -s {{ vg_pesize | default(4) }} {{ (item.value | first).vgname }} {{ item.value | ovirt.ovirt.json_query('[].pvname') | unique | join(',') }}
+ # lvg:
+ #   state: present
+ #   vg: "{{ (item.value | first).vgname }}"
+ #   pvs: "{{ item.value | json_query('[].pvname') | unique | join(',') }}"
+ #   pv_options: "--dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }}"
     # pesize is 4m by default for JBODs
-    pesize: "{{ vg_pesize | default(4) }}"
+ #   pesize: "{{ vg_pesize | default(4) }}"
   loop: "{{gluster_volumes_by_groupname | default({}) | dict2items}}"
   when: gluster_volumes_by_groupname is defined and item.value|length>0
   
