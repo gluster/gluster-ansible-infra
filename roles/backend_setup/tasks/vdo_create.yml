@@ -51,7 +51,7 @@
         and gluster_infra_installed_vdo_deps is defined and gluster_infra_installed_vdo_deps==true)
 
 - name: Create VDO with specified size
-  command: "vdo create -n {{ item.name }} --device {{ item.device }} --compression {{ item.compression | default('enabled') }} --emulate512 disabled --indexMem {{ item.indexmem | default('0.25') }} --vdoAckThreads {{ item.ackthreads | default('1') }} --vdoBioThreads {{ item.biothreads | default('4') }} --vdoCpuThreads {{ item.cputhreads | default('2') }} --vdoLogicalThreads {{ item.logicalthreads | default('1') }} --vdoPhysicalThreads {{ item.physicalthreads | default('1') }}"
+  command: "vdo create -n {{ item.name }} --device {{ item.device }} --compression {{ item.compression | default('enabled') }} --emulate512 disabled --indexMem {{ item.indexmem | default('0.25') }} --vdoAckThreads {{ item.ackthreads | default('1') }} --vdoBioThreads {{ item.biothreads | default('4') }} --vdoCpuThreads {{ item.cputhreads | default('2') }} --vdoLogicalThreads {{ item.logicalthreads | default('1') }} --vdoPhysicalThreads {{ item.physicalthreads | default('1') }} {% if item.logicalsize | replace('G','') | int >= 2000 %} --vdoSlabSize 32G {% elif item.logicalsize | replace('G','') | int >= 1000 %} --vdoSlabSize 16G {% else %} --vdoSlabSize 8G {% endif %} "
   #vdo:
   #  name: "{{ item.name }}"
   #  device: "{{ item.device }}"
