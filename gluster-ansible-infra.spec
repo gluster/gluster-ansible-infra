@@ -1,5 +1,5 @@
 %global rolesdir %{_sysconfdir}/ansible/roles/gluster.infra
-%global buildnum 20
+%global buildnum 21
 
 Name:      gluster-ansible-infra
 Version:   1.0.4
@@ -34,6 +34,9 @@ cp -dpr defaults handlers meta roles tasks tests README.md LICENSE vars playbook
 %license LICENSE
 
 %changelog
+* Thu May 05 2022 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.4-21
+- Rebase on v1.0.4-21
+
 * Fri Apr 01 2022 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.4-20
 - Rebase on v1.0.4-20
 
