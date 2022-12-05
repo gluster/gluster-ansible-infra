@@ -68,7 +68,7 @@
       {{- output.append({"vgname": cnf.vgname, "pvname": (cnf.pvs|default('') ~ ',' ~ (cnf.meta_pvs|default(''))).split(',') | select | list | unique | join(',')}) -}}
       {%- endif -%}
       {%- endfor -%}
-      {{- output | to_json -}}
+      {{- output -}}
   when: gluster_infra_thinpools is defined and gluster_infra_thinpools is not none and gluster_infra_thinpools|length >0
 
 # https://github.com/ansible/ansible/issues/13262
@@ -298,4 +298,3 @@
   #            --zero n"
   with_items: "{{ gluster_infra_thinpools }}"
   when: gluster_infra_thinpools is defined and item.raid is not defined
-

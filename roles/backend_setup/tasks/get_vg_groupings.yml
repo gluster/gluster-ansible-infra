@@ -5,7 +5,7 @@
    gluster_volumes_by_groupname_pre: >-
     {%- set output={} -%}
     {%- for grouper, devicesConf in volume_groups | groupby('vgname') -%}
-      {%- set confs=[] -%}    
+      {%- set confs=[] -%}
       {%- for deviceConf in devicesConf -%}
         {%- if deviceConf.pvname is defined -%}
           {%- for device in deviceConf.pvname.split(',') -%}
@@ -15,7 +15,7 @@
           {%- endfor -%}
         {%- endif -%}
       {%- endfor -%}
-      {{- output.__setitem__(grouper, confs) -}}      
+      {{- output.__setitem__(grouper, confs) -}}
     {%- endfor -%}
     {%- if  hostvars[inventory_hostname].ansible_lvm is defined and hostvars[inventory_hostname].ansible_lvm.pvs is defined -%}
       {%- for device, pvs in hostvars[inventory_hostname].ansible_lvm.pvs.items() -%}
@@ -24,7 +24,7 @@
         {%- endif -%}
       {%- endfor -%}
     {%- endif -%}
-    {{- output | to_json -}}    
+    {{- output -}}
 
 - name: Check if vg block device exists
   shell: >
@@ -51,4 +51,4 @@
         {{- output.__setitem__(vgname, confs) -}}
       {%- endfor -%}
     {%- endfor -%}
-    {{- output | to_json -}}
+    {{- output -}}

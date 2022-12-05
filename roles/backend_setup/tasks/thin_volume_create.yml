@@ -49,7 +49,7 @@
       {{- output.append({"vgname": cnf.vgname, "pvname": (cnf.pvs|default('') ~ ',' ~ (cnf.meta_pvs|default(''))).split(',') | select | list | unique | join(',')}) -}}
       {%- endif -%}
       {%- endfor -%}
-      {{- output | to_json -}}
+      {{- output -}}
   when: gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0
 
 
@@ -151,4 +151,3 @@
    gluster_infra_lv_logicalvols is defined and gluster_infra_lv_logicalvols is not none and gluster_infra_lv_logicalvols|length >0 and item is defined and item is not none
    and lvt_device_exists.results[index].stdout_lines is defined and "0" not in lvt_device_exists.results[index].stdout_lines
    and ((item.opts is not defined or "raid" not in item.opts) and item.meta_pvs is not defined and item.meta_opts is not defined)
-
