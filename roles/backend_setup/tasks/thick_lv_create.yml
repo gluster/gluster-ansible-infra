@@ -31,7 +31,7 @@
       {{- output.append({"vgname": cnf.vgname, "raid": cnf.raid | default() , "pvname": (cnf.pvs|default('')).split(',') | select | list | unique | join(',')}) -}}
       {%- endif -%}
       {%- endfor -%}
-      {{- output | to_json -}}
+      {{- output -}}
   when: gluster_infra_thick_lvs is defined and gluster_infra_thick_lvs is not none and gluster_infra_thick_lvs|length >0
 
 - name: Make sure thick pvs exists in volume group
@@ -129,4 +129,3 @@
   loop_control:
    index_var: index
   when: item is not none and lv_device_exists.results[index].stdout_lines is defined and "0" not in lv_device_exists.results[index].stdout_lines
-
