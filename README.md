@@ -157,7 +157,7 @@ gluster_infra_thick_lvs:
 
 * vgname: Required, string defining the VG name to belong to
 * lvname: Required, string defining the name of the LV
-* lvsize: Optional, Default 100%, size of LV
+* size: Optional, Default 100%, size of LV
 * pvs: Optional, Default empty, the physical devices the LV should be placed on
 * opts: Optional, Default empty, additional parameters being passed to the lvm module, which uses those in lvcreate
 * skipfs: Optional Boolean, Default no. When yes no XFS filesystem will be created on the LV
