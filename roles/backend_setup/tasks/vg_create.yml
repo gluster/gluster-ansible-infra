@@ -62,7 +62,7 @@
 #TODO: fix pesize // {{ ((item.value | first).vg_pesize || vg_pesize) | default(4) }}
 - name: Create volume groups
   register: gluster_changed_vgs
-  command: vgcreate --dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }} -s {{ vg_pesize | default(4) }} {{ (item.value | first).vgname }} {{ item.value | ovirt.ovirt.json_query('[].pvname') | unique | join(',') }}
+  command: vgcreate --dataalignment {{ item.value.pv_dataalign | default(pv_dataalign) }} -s {{ vg_pesize | default(4) }} {{ (item.value | first).vgname }} {{ item.value | ovirt.ovirt.json_query('[].pvname') | unique | join(' ') }}
  # lvg:
  #   state: present
  #   vg: "{{ (item.value | first).vgname }}"
